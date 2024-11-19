@@ -6,13 +6,36 @@ type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string | undefined;
 };
 
+const ENTITY_ERROR_STATUS = 422;
+
+type EntityErrorPayload = {
+  field: string;
+  message: string;
+};
+
 // Nên kế thừa từ Error để có thể sử dụng nhiều thuộc tính, phương thức có sẵn của Error
-class HttpError extends Error {
+export class HttpError extends Error {
   status: number;
   payload: any;
 
   constructor({ status, payload }: { status: number; payload: any }) {
     super("Http Error");
+    this.status = status;
+    this.payload = payload;
+  }
+}
+
+export class EntityError extends HttpError {
+  status: 422;
+  payload: EntityErrorPayload;
+  constructor({
+    status,
+    payload,
+  }: {
+    status: 422;
+    payload: EntityErrorPayload;
+  }) {
+    super({ status, payload });
     this.status = status;
     this.payload = payload;
   }
@@ -71,7 +94,16 @@ const request = async <Response>(
   };
 
   if (!res.ok) {
-    throw new HttpError(data);
+    if (res.status === ENTITY_ERROR_STATUS) {
+      throw new EntityError(
+        data as {
+          status: 422;
+          payload: EntityErrorPayload;
+        }
+      );
+    } else {
+      throw new HttpError(data);
+    }
   }
 
   if (/^(\/?Auths\/login)$/.test(url) || /^(\/?Auths\/signup)$/.test(url)) {

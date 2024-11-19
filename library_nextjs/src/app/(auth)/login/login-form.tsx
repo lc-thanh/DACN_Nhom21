@@ -20,6 +20,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import authApiRequests from "@/apiRequests/auth";
 import { useRouter } from "next/navigation";
+import { handleApiError } from "@/lib/utils";
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
@@ -37,27 +38,14 @@ export function LoginForm() {
     setLoading(true);
     try {
       await authApiRequests.login(values);
-
       toast.success("Đăng nhập thành công!");
       router.push("/me");
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      const payload = error.payload as {
-        field: string;
-        message: string;
-      };
-      const status = error.status as number;
-
-      if (status === 401) {
-        form.setError(payload.field as "phone" | "password", {
-          type: "server",
-          message: payload.message,
-        });
-        toast.error(payload.message);
-      } else {
-        toast.error("Có lỗi xảy ra trong khi đăng nhập");
-      }
+      handleApiError({
+        error,
+        toastMessage: "Có lỗi xảy ra trong quá trình đăng nhập",
+        setErrorForm: form.setError,
+      });
     } finally {
       setLoading(false);
     }

@@ -23,6 +23,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { handleApiError } from "@/lib/utils";
 
 export function SignupForm() {
   const [loading, setLoading] = useState(false);
@@ -44,26 +45,14 @@ export function SignupForm() {
     setLoading(true);
     try {
       await authApiRequests.register(values);
-
       toast.success("Đăng ký thành công!");
       router.push("/me");
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      const status = error.status as number;
-      if (status === 409) {
-        const payload = error.payload as {
-          field: string;
-          message: string;
-        };
-        form.setError(payload.field as "phone" | "individualId", {
-          type: "manual",
-          message: payload.message,
-        });
-        toast.error(payload.message);
-      } else {
-        toast.error("Đã có lỗi xảy ra, vui lòng thử lại sau!");
-      }
+      handleApiError({
+        error,
+        toastMessage: "Đã có lỗi xảy ra, vui lòng thử lại sau!",
+        setErrorForm: form.setError,
+      });
     } finally {
       setLoading(false);
     }
@@ -73,7 +62,7 @@ export function SignupForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-3 max-w-[450px] w-full"
+        className="space-y-3 max-w-[450px] w-full mb-10"
       >
         <FormField
           control={form.control}
