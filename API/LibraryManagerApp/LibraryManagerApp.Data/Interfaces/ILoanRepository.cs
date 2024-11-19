@@ -9,6 +9,5 @@ namespace LibraryManagerApp.Data.Interfaces
         Task CreateLoanAsync(Loan loan);
         IQueryable<Loan> GetAllInforsQuery();
         Task<Loan> GetLoanByIdAsync(Guid loanId);
-        Task ReturnBooksAsync(Guid loanId);
     }
 }

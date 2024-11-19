@@ -66,27 +66,5 @@ namespace LibraryManagerApp.Data.Repository
             .ThenInclude(ld => ld.Book)
             .FirstOrDefaultAsync(l => l.Id == loanId);
         }
-
-        public async Task ReturnBooksAsync(Guid loanId)
-        {
-            var loan = await GetLoanByIdAsync(loanId);
-            if (loan != null)
-            {
-                loan.ReturnedDate = DateTime.Now;
-                _context.Loans.Update(loan);
-
-                // Optionally, update book quantities if needed
-                foreach (var detail in loan.LoanDetails)
-                {
-                    var book = await _context.Books.FindAsync(detail.BookId);
-                    if (book != null)
-                    {
-                        book.AvailableQuantity++;
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-            }
-        }
     }
 }

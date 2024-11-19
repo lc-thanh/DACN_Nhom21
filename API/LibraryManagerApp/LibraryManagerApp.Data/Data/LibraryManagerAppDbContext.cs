@@ -29,7 +29,10 @@ namespace LibraryManagerApp.Data.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
-                .HasIndex(u => u.Email)
+                .HasIndex(u => u.Phone)
+                .IsUnique();
+            modelBuilder.Entity<Member>()
+                .HasIndex(u => u.IndividualId)
                 .IsUnique();
 
             modelBuilder.Entity<Loan>()
@@ -428,6 +431,7 @@ namespace LibraryManagerApp.Data.Data
                     Id = Guid.NewGuid(),
                     FullName = "Nguyễn Văn A",
                     Email = "nguyenvana@ex.com",
+                    Phone = "0834361812",
                     Address = "Hà Nội",
                     DateOfBirth = new DateTime(2004, 07, 08),
                     Role = Enum.RoleEnum.Librarian,
@@ -443,6 +447,8 @@ namespace LibraryManagerApp.Data.Data
                     Id = Guid.NewGuid(),
                     FullName = "Lê Thị B",
                     Email = "lethib@ex.com",
+                    Phone = "0834361813",
+                    IndividualId = "2021947395",
                     Address = "Hải Dương",
                     DateOfBirth = new DateTime(2002, 11, 18),
                     Role = Enum.RoleEnum.Member,
@@ -453,6 +459,8 @@ namespace LibraryManagerApp.Data.Data
                     Id = Guid.NewGuid(),
                     FullName = "Trần Văn C",
                     Email = "tranvanc@ex.com",
+                    Phone = "0834361814",
+                    IndividualId = "2021957689",
                     Address = "Quảng Ninh",
                     DateOfBirth = new DateTime(2004, 10, 05),
                     Role = Enum.RoleEnum.Member,

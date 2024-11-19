@@ -18,32 +18,32 @@ namespace LibraryManagerApp.Data.Validation
 
             if (string.IsNullOrWhiteSpace(password))
             {
-                return new ValidationResult("Password is required.");
+                return new ValidationResult("Mật khẩu không được để trống!");
             }
 
             if (password.Length < _minLength)
             {
-                return new ValidationResult($"Password must be at least {_minLength} characters long.");
+                return new ValidationResult($"Mật khẩu phải có ít nhất {_minLength} ký tự!");
             }
 
             if (!Regex.IsMatch(password, @"[A-Z]"))
             {
-                return new ValidationResult("Password must contain at least one uppercase letter.");
+                return new ValidationResult("Mật khẩu phải có ít nhất 1 chữ cái viết hoa!");
             }
 
             if (!Regex.IsMatch(password, @"[a-z]"))
             {
-                return new ValidationResult("Password must contain at least one lowercase letter.");
+                return new ValidationResult("Mật khẩu phải có ít nhất 1 chữ cái viết thường!");
             }
 
             if (!Regex.IsMatch(password, @"[0-9]"))
             {
-                return new ValidationResult("Password must contain at least one number.");
+                return new ValidationResult("Mật khẩu phải có ít nhất 1 chữ số!");
             }
 
             if (!Regex.IsMatch(password, @"[\W_]"))
             {
-                return new ValidationResult("Password must contain at least one special character.");
+                return new ValidationResult("Mật khẩu phải có ít nhất 1 ký tự đặc biệt!");
             }
 
             return ValidationResult.Success;

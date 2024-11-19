@@ -36,10 +36,11 @@ namespace LibraryManagerApp.API
                     builder.AllowAnyOrigin()
                            .AllowAnyMethod()
                            .AllowAnyHeader();
-                           //.AllowCredentials();  // SignalR;
+                    //.AllowCredentials();  // SignalR;
                 });
             });
-            builder.Services.AddSignalR();
+
+            //builder.Services.AddSignalR();
 
             // Thêm dịch vụ Authentication với JWT Bearer
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -113,7 +114,7 @@ namespace LibraryManagerApp.API
             // Cho phép truy cập các file tĩnh từ thư mục wwwroot
             app.UseStaticFiles();
 
-            app.MapHub<NotificationHub>("/notificationHub");
+            //app.MapHub<NotificationHub>("/notificationHub");
 
             app.UseCors("AllowAll");
 

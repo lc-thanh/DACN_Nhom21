@@ -13,14 +13,14 @@ namespace LibraryManagerApp.Data.Models
         [MaxLength(100)]
         public string FullName { get; set; }
 
-        [Required]
         [EmailAddress] // Validate Email
         [MaxLength(255)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
+        [Required]
         [MaxLength(12)]
         [RegularExpression(@"^(03|05|07|08|09|01[2|6|8|9])([0-9]{8})$", ErrorMessage = "PhoneNumber is not in correct format!")]
-        public string? Phone { get; set; }
+        public string Phone { get; set; }
 
         [MaxLength(255)]
         public string? Address { get; set; }

@@ -5,6 +5,7 @@ using LibraryManagerApp.Data.Models;
 using LibraryManagerApp.Data.Pagination;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Security.Claims;
 
@@ -137,10 +138,6 @@ namespace LibraryManagerApp.API.Controllers
                 book.AvailableQuantity--;
                 _unitOfWork.BookRepository.Update(book);
                 _unitOfWork.LoanDetailRepository.Add(loanDetail);
-                //if (await _unitOfWork.SaveChangesAsync() == 0)
-                //{
-                //    return BadRequest("Something wrong while create loanDetails!");
-                //}
             }
 
             _unitOfWork.LoanRepository.Add(loan);
@@ -152,12 +149,37 @@ namespace LibraryManagerApp.API.Controllers
             return BadRequest("Something wrong while create loan!");
         }
 
-        [HttpPost("return/{loanId}")]
+        [Authorize(Roles = "Librarian")]
+        [HttpPost("{loanId}")]
         public async Task<IActionResult> ReturnBooks(Guid loanId)
         {
-            await _unitOfWork.LoanRepository.ReturnBooksAsync(loanId);
+            var loan = await _unitOfWork.LoanRepository.GetAllInforsQuery().FirstOrDefaultAsync(l => l.Id == loanId);
+            if (loan == null)
+                return BadRequest("Cannot find loan with provided id");
 
-            return Ok("Books returned successfully.");
+            if (loan.Status == StatusEnum.Returned)
+                return BadRequest("This loan was already returned!");
+
+            loan.Status = StatusEnum.Returned;
+            loan.ReturnedDate = DateTime.Now;
+            _unitOfWork.LoanRepository.Update(loan);
+
+            // Optionally, update book quantities if needed
+            foreach (var detail in loan.LoanDetails)
+            {
+                var book = await _unitOfWork.BookRepository.GetByIdAsync(detail.BookId);
+                if (book != null)
+                {
+                    book.AvailableQuantity++;
+                    _unitOfWork.BookRepository.Update(book);
+                }
+            }
+
+            var saved = await _unitOfWork.SaveChangesAsync();
+            if (saved > 0)
+                return Ok("Books returned successfully.");
+
+            return BadRequest("Something went wrong while save changes!");
         }
 
 

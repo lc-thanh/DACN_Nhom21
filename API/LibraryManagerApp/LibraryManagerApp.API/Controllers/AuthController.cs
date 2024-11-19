@@ -43,18 +43,18 @@ namespace LibraryManagerApp.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Find user with provided Email
-            var user = await _unitOfWork.UserRepository.GetByEmailAsync(login.Email);
+            // Find user with provided Phone
+            var user = await _unitOfWork.UserRepository.GetByPhoneAsync(login.Phone);
 
             if (user == null)
             {
-                return NotFound("Cannot find user with provided Email!");
+                return Unauthorized(new { message = "Số điện thoại không tồn tại!", field = "phone" });
             }
 
             // Check password
             if (!_userService.VerifyPassword(user.Password, login.Password))
             {
-                return Unauthorized();
+                return Unauthorized(new { message = "Mật khẩu không chính xác!", field = "password" });
             }
 
             JwtSecurityToken token;
@@ -63,24 +63,24 @@ namespace LibraryManagerApp.API.Controllers
             {
                 case Data.Enum.RoleEnum.Admin:
                     {
-                        token = GenerateJwtToken(user.Email, "Admin");
+                        token = GenerateJwtToken(user.Phone, "Admin");
                         break;
                     }
 
                 case Data.Enum.RoleEnum.Librarian:
                     {
-                        token = GenerateJwtToken(user.Email, "Librarian");
+                        token = GenerateJwtToken(user.Phone, "Librarian");
                         break;
                     }
 
                 case Data.Enum.RoleEnum.Member:
                     {
-                        token = GenerateJwtToken(user.Email, "Member");
+                        token = GenerateJwtToken(user.Phone, "Member");
                         break;
                     }
 
                 default:
-                    return BadRequest("Something wrong while logging!");
+                    return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
             }
 
             var refreshToken = GenerateRefreshToken();
@@ -93,33 +93,55 @@ namespace LibraryManagerApp.API.Controllers
             if (saved > 0)
                 return Ok(new
                 {
-                    Token = new JwtSecurityTokenHandler().WriteToken(token),
-                    RefreshToken = refreshToken,
-                    Expiration = token.ValidTo,
-                    Role = user.Role
+                    data = new
+                    {
+                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        RefreshToken = refreshToken,
+                        Expiration = token.ValidTo,
+                    },
+                    message = "Đăng nhập thành công!"
                 });
 
-            return BadRequest("Something wrong while logging!");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
         [HttpPost("signup")]
         public async Task<IActionResult> signUp([FromBody] UserSignUp signUp)
         {
-            if (signUp == null)
-            {
-                return BadRequest();
-            }
-
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState);
+                return BadRequest(new { 
+                    message = "Dữ liệu đầu vào chưa đúng!", 
+                    ModelState 
+                });
             }
 
-            var emailcheck = await _unitOfWork.UserRepository.GetByEmailAsync(signUp.Email);
-
-            if (emailcheck != null)
+            if (!signUp.Password.Equals(signUp.ConfirmPassword))
             {
-                return Conflict(new { message = "Email already exists!" });
+                return BadRequest(new { 
+                    message = "Xác nhận mật khẩu chưa đúng!", 
+                    field = "confirmPassword" 
+                });
+            }
+
+            var phoneCheck = await _unitOfWork.UserRepository.GetByPhoneAsync(signUp.Phone);
+            if (phoneCheck != null)
+            {
+                return Conflict(new
+                {
+                    message = "Đã tồn tại số điện thoại này!",
+                    field = "phone"
+                });
+            }
+
+            var idCheck = await _unitOfWork.MemberRepository.GetByIndividualIdAsync(signUp.IndividualId);
+            if (idCheck != null)
+            {
+                return Conflict(new
+                {
+                    message = "Đã tồn tại mã sinh viên/giảng viên này!",
+                    field = "individualId"
+                });
             }
 
             Member memberToCreate = new Member
@@ -127,23 +149,44 @@ namespace LibraryManagerApp.API.Controllers
                 FullName = signUp.FullName,
                 Email = signUp.Email,
                 Phone = signUp.Phone,
+                IndividualId = signUp.IndividualId,
                 Password = _userService.HashPassword(signUp.Password),
                 Role = Data.Enum.RoleEnum.Member,
             };
 
             _unitOfWork.MemberRepository.Add(memberToCreate);
 
-            var saved = await _unitOfWork.SaveChangesAsync();
+            var saved_signup = await _unitOfWork.SaveChangesAsync();
 
-            if (saved > 0)
+            if (saved_signup > 0)
             {
-                return Ok(new { Result = "User registered successfully!" });
+                JwtSecurityToken token = GenerateJwtToken(signUp.Phone, "Member");
+                var refreshToken = GenerateRefreshToken();
+                _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
+                memberToCreate.RefreshToken = refreshToken;
+                memberToCreate.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
+
+                _unitOfWork.MemberRepository.Update(memberToCreate);
+                var saved_login = await _unitOfWork.SaveChangesAsync();
+                if (saved_login > 0)
+                    return Ok(new
+                    {
+                        data = new
+                        {
+                            Token = new JwtSecurityTokenHandler().WriteToken(token),
+                            RefreshToken = refreshToken,
+                            Expiration = token.ValidTo
+                        },
+                        message = "Đăng ký tài khoản mới thành công!"
+                    });
+
+                return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
             }
 
-            return BadRequest("Something wrong while signing up!");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
-        private JwtSecurityToken GenerateJwtToken(string userEmail, string role)
+        private JwtSecurityToken GenerateJwtToken(string userPhone, string role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -151,7 +194,7 @@ namespace LibraryManagerApp.API.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, userEmail),
+                new Claim(ClaimTypes.Name, userPhone),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Role, role) // Thêm role vào claims
             };
@@ -166,21 +209,61 @@ namespace LibraryManagerApp.API.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpGet("me")]
         public async Task<IActionResult> GetPersonalInformation()
         {
             // Get User
-            string userEmail = User.FindFirst(ClaimTypes.Name)?.Value;
-            var user = await _unitOfWork.UserRepository.GetByEmailAsync(userEmail);
+            string userPhone = User.FindFirst(ClaimTypes.Name)?.Value;
+            string userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            return Ok(new 
-            { 
-                FullName = user.FullName,  
-                Email = user.Email,
-                Phone = user.Phone,
-                Address = user.Address,
-                DateOfBirth = user.DateOfBirth,
-            });
+            switch (userRole)
+            {
+                case "Member":
+                    {
+                        var member = await _unitOfWork.MemberRepository.GetByPhoneAsync(userPhone);
+
+                        return Ok(new
+                        {
+                            FullName = member.FullName,
+                            Phone = member.Phone,
+                            IndividualId = member.IndividualId,
+                            Email = member.Email,
+                            Address = member.Address,
+                            DateOfBirth = member.DateOfBirth,
+                        });
+                    }
+
+                case "Admin":
+                    {
+                        var admin = await _unitOfWork.AdminRepository.GetByPhoneAsync(userPhone);
+
+                        return Ok(new
+                        {
+                            FullName = admin.FullName,
+                            Phone = admin.Phone,
+                            Email = admin.Email,
+                            Address = admin.Address,
+                            DateOfBirth = admin.DateOfBirth,
+                        });
+                    }
+
+                case "Librarian":
+                    {
+                        var librarian = await _unitOfWork.LibrarianRepository.GetByPhoneAsync(userPhone);
+
+                        return Ok(new
+                        {
+                            FullName = librarian.FullName,
+                            Phone = librarian.Phone,
+                            Email = librarian.Email,
+                            Address = librarian.Address,
+                            DateOfBirth = librarian.DateOfBirth,
+                        });
+                    }
+
+                default:
+                    return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
+            }
         }
 
         private JwtSecurityToken GenerateJwtToken(List<Claim> authClaims)
@@ -226,9 +309,9 @@ namespace LibraryManagerApp.API.Controllers
                 return BadRequest("Cannot Get Principal From Expired Token");
             }
 
-            string userEmail = principal.Identity.Name;
+            string userPhone = principal.Identity.Name;
 
-            var user = await _unitOfWork.UserRepository.GetByEmailAsync(userEmail);
+            var user = await _unitOfWork.UserRepository.GetByPhoneAsync(userPhone);
 
             if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
             {
