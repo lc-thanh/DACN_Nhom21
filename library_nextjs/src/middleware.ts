@@ -7,15 +7,15 @@ const authPaths = ["/login", "/signup"];
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const sessionToken = request.cookies.get("sessionToken")?.value;
+  const accessToken = request.cookies.get("accessToken")?.value;
 
-  // Kiểm tra nếu người dùng truy cập vào đường dẫn bắt đầu bằng bất kỳ đường dẫn nào trong privatePaths và không có sessionToken
-  if (privatePaths.some((path) => pathname.startsWith(path)) && !sessionToken) {
+  // Kiểm tra nếu người dùng truy cập vào đường dẫn bắt đầu bằng bất kỳ đường dẫn nào trong privatePaths và không có accessToken
+  if (privatePaths.some((path) => pathname.startsWith(path)) && !accessToken) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Kiểm tra nếu người dùng truy cập vào đường dẫn bắt đầu bằng bất kỳ đường dẫn nào trong authPaths và đã có sessionToken
-  if (authPaths.some((path) => pathname.startsWith(path)) && sessionToken) {
+  // Kiểm tra nếu người dùng truy cập vào đường dẫn bắt đầu bằng bất kỳ đường dẫn nào trong authPaths và đã có accessToken
+  if (authPaths.some((path) => pathname.startsWith(path)) && accessToken) {
     return NextResponse.redirect(new URL("/me", request.url));
   }
 

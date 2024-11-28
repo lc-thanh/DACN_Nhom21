@@ -87,7 +87,7 @@ export type RegisterBodyType = z.TypeOf<typeof RegisterBody>;
 
 export const RegisterRes = z.object({
   data: z.object({
-    token: z.string(),
+    accessToken: z.string(),
     refreshToken: z.string(),
     expiration: z.string(),
   }),

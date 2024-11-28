@@ -41,21 +41,33 @@ export class EntityError extends HttpError {
   }
 }
 
-class ClientSessionToken {
-  private token = "";
-  get value() {
-    return this.token;
+class ClientTokens {
+  private _accessToken = "";
+  get accessToken() {
+    return this._accessToken;
   }
-  set value(token: string) {
+  set accessToken(token: string) {
     // Nếu gọi method này ở server thì sẽ bị lỗi
+    // Vì nếu nhiều client sử dụng chung 1 object clientTokens thì sẽ bị overwrite
     if (typeof window === "undefined") {
       throw new Error("Cannot set token on server side");
     }
-    this.token = token;
+    this._accessToken = token;
+  }
+
+  private _refreshToken = "";
+  get refreshToken() {
+    return this._refreshToken;
+  }
+  set refreshToken(token: string) {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot set token on server side");
+    }
+    this._refreshToken = token;
   }
 }
 
-export const clientSessionToken = new ClientSessionToken();
+export const clientTokens = new ClientTokens();
 
 const request = async <Response>(
   method: "GET" | "POST" | "PUT" | "DELETE",
@@ -65,7 +77,7 @@ const request = async <Response>(
   const body = options?.body ? JSON.stringify(options.body) : undefined;
   const baseHeaders = {
     "Content-Type": "application/json",
-    Authorization: `Bearer ${clientSessionToken.value}`,
+    Authorization: `Bearer ${clientTokens.accessToken}`,
   };
   // Nếu không truyền baseUrl (hoặc baseUrl = undefined) thì lấy giá trị từ envConfig.NEXT_PUBLIC_API_ENDPOINT
   // Nếu truyền baseUrl thì lấy giá trị truyền vào, truyền vào '' thì => gọi API đến Next Server
@@ -108,14 +120,24 @@ const request = async <Response>(
 
   if (/^(\/?Auths\/login)$/.test(url) || /^(\/?Auths\/signup)$/.test(url)) {
     // set token phía client
-    clientSessionToken.value = (payload as LoginResType).data.token;
+    if (typeof window !== "undefined") {
+      clientTokens.accessToken = (payload as LoginResType).data.accessToken;
+      clientTokens.refreshToken = (payload as LoginResType).data.refreshToken;
+    }
+
     // set token phía server
     await request("POST", "/api/auth", {
       baseUrl: "",
-      body: { sessionToken: clientSessionToken.value } as unknown as BodyInit,
+      body: {
+        accessToken: (payload as LoginResType).data.accessToken,
+        refreshToken: (payload as LoginResType).data.refreshToken,
+      } as unknown as BodyInit,
     });
   } else if (/^(\/?Auths\/logout)$/.test(url)) {
-    clientSessionToken.value = "";
+    if (typeof window !== "undefined") {
+      clientTokens.accessToken = "";
+      clientTokens.refreshToken = "";
+    }
   }
 
   return data;

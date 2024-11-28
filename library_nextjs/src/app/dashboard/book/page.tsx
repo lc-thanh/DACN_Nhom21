@@ -1,5 +1,7 @@
-import { BookTable } from "@/app/dashboard/book/book-table";
+import BooksTable from "@/app/dashboard/book/_component/books-table";
+import { searchParamsCache } from "@/app/dashboard/book/_lib/validations";
 import { BreadcrumbBook } from "@/app/dashboard/book/breadcrum-book";
+import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import {
   Card,
   CardContent,
@@ -7,8 +9,19 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { SearchParams } from "@/types";
+import { Suspense } from "react";
 
-export default async function BookManagementPage() {
+interface BookManagementPageProps {
+  searchParams: Promise<SearchParams>;
+}
+
+export default async function BookManagementPage(
+  props: BookManagementPageProps
+) {
+  const searchParams = await props.searchParams;
+  const search = searchParamsCache.parse(searchParams);
+
   return (
     <div className="px-1 w-full flex-row gap-2">
       <div className="mb-2">
@@ -23,7 +36,33 @@ export default async function BookManagementPage() {
           <CardDescription>Tất cả các cuốn sách trong thư viện</CardDescription>
         </CardHeader>
         <CardContent>
-          <BookTable />
+          <DataTableSkeleton
+            columnCount={6}
+            searchableColumnCount={1}
+            filterableColumnCount={2}
+            cellWidths={["10rem", "40rem", "12rem", "12rem", "8rem", "8rem"]}
+            // shrinkZero
+          />
+          {/* <Suspense
+            fallback={
+              <DataTableSkeleton
+                columnCount={6}
+                searchableColumnCount={1}
+                filterableColumnCount={2}
+                cellWidths={[
+                  "10rem",
+                  "40rem",
+                  "12rem",
+                  "12rem",
+                  "8rem",
+                  "8rem",
+                ]}
+                // shrinkZero
+              />
+            }
+          >
+            <BooksTable />
+          </Suspense> */}
         </CardContent>
       </Card>
     </div>

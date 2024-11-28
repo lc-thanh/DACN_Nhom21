@@ -1,36 +1,26 @@
-import { cookies } from "next/headers";
-
 export async function POST(request: Request) {
   const res: {
-    sessionToken: string;
+    accessToken: string;
+    refreshToken: string;
   } = await request.json();
-  const sessionToken = res.sessionToken;
-  if (!sessionToken) {
+  const accessToken = res.accessToken;
+  const refreshToken = res.refreshToken;
+  if (!accessToken || !refreshToken) {
     return Response.json(
-      { message: "Không nhận được sessionToken!" },
+      { message: "Không nhận được accessToken hoặc refreshToken!" },
       { status: 400 }
     );
   }
 
-  return Response.json(
-    { res },
-    {
-      status: 200,
-      headers: {
-        "Set-Cookie": `sessionToken=${res.sessionToken}; Path=/; HttpOnly`,
-      },
-    }
+  const headers = new Headers();
+  headers.append("Set-Cookie", `accessToken=${accessToken}; Path=/; HttpOnly`);
+  headers.append(
+    "Set-Cookie",
+    `refreshToken=${refreshToken}; Path=/; HttpOnly`
   );
-}
 
-export async function GET() {
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("sessionToken")?.value;
-
-  return Response.json(
-    { sessionToken },
-    {
-      status: 200,
-    }
-  );
+  return Response.json(res, {
+    status: 200,
+    headers: headers,
+  });
 }

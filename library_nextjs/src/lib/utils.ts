@@ -10,7 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const handleApiError = ({
   error,
-  toastMessage,
+  toastMessage = "Có lỗi không xác định",
   setErrorForm,
   duration,
 }: {
@@ -26,7 +26,7 @@ export const handleApiError = ({
     });
     toast.error(error.payload.message, { duration: duration ?? 5000 });
   } else {
-    toast.error(toastMessage ?? "Có lỗi không xác định", {
+    toast.error(toastMessage, {
       duration: duration ?? 5000,
     });
   }

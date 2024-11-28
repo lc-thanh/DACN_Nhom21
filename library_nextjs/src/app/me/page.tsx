@@ -1,6 +1,7 @@
 "use client";
 
 import accountApiRequests from "@/apiRequests/account";
+import ButtonLogout from "@/components/button-logout";
 import { useEffect } from "react";
 
 export default function MeProfile() {
@@ -11,8 +12,11 @@ export default function MeProfile() {
     };
     fetchMe();
   }, []);
-  // const cookieStore = await cookies();
-  // const sessionToken = cookieStore.get("sessionToken")?.value;
 
-  return <div>Welcome</div>;
+  return (
+    <div>
+      <ButtonLogout />
+      <h1>Welcome</h1>
+    </div>
+  );
 }
