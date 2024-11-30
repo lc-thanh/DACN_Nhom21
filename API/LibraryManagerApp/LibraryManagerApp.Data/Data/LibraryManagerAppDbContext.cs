@@ -18,19 +18,20 @@ namespace LibraryManagerApp.Data.Data
         public DbSet<Librarian> Librarians { get; set; }
         public DbSet<Member> Members { get; set; }
         public DbSet<Book> Books { get; set; }
-        public DbSet<Author> Authors { get; set; }
         public DbSet<BookShelf> BookShelves { get; set; }
         public DbSet<Cabinet> Cabinets { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Loan> Loans { get; set; }
         public DbSet<LoanDetail> LoanDetails { get; set; }
         public DbSet<UserAction> UserActions { get; set; }
+        public DbSet<UserToken> UserTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Phone)
                 .IsUnique();
+
             modelBuilder.Entity<Member>()
                 .HasIndex(u => u.IndividualId)
                 .IsUnique();
@@ -38,13 +39,6 @@ namespace LibraryManagerApp.Data.Data
             modelBuilder.Entity<Loan>()
                 .HasIndex(l => l.LoanCode)
                 .IsUnique();
-
-
-            modelBuilder.Entity<Book>()
-                .HasOne<Author>(b => b.Author)
-                .WithMany(a => a.Books)
-                .HasForeignKey(b => b.AuthorId)
-                .IsRequired(false);
 
             modelBuilder.Entity<Book>()
                 .HasOne<Category>(b => b.Category)
@@ -91,6 +85,11 @@ namespace LibraryManagerApp.Data.Data
                 .HasOne<User>(ua => ua.User)
                 .WithMany(u => u.UserActions)
                 .HasForeignKey(ua => ua.UserId);
+
+            modelBuilder.Entity<UserToken>()
+                .HasOne<User>(ut => ut.User)
+                .WithMany(u => u.UserTokens)
+                .HasForeignKey(ut => ut.UserId);
 
 
             // Seed data for Cabinets
@@ -149,26 +148,6 @@ namespace LibraryManagerApp.Data.Data
             };
             modelBuilder.Entity<BookShelf>().HasData(bookShelfs);
 
-            // Seed data for Authors
-            List<Author> authors = new List<Author>()
-            {
-                // 0
-                new Author() { Id = Guid.NewGuid(), Name = "Hồ Chí Minh", CreatedOn = new DateTime(2023, 05, 17) },
-                // 1
-                new Author() { Id = Guid.NewGuid(), Name = "Phùng Quán", CreatedOn = new DateTime(2023, 05, 17) },
-                // 2
-                new Author() { Id = Guid.NewGuid(), Name = "Mark Raskino - Graham Waller", CreatedOn = new DateTime(2023, 05, 17) },
-                // 3
-                new Author() { Id = Guid.NewGuid(), Name = "Steven Levy", CreatedOn = new DateTime(2023, 08, 21) },
-                // 4
-                new Author() { Id = Guid.NewGuid(), Name = "Quốc hội nước CHXHCNVN", CreatedOn = new DateTime(2024, 01, 15) },
-                // 5
-                new Author() { Id = Guid.NewGuid(), Name = "Đào Hải", CreatedOn = new DateTime(2024, 01, 15) },
-                // 6
-                new Author() { Id = Guid.NewGuid(), Name = "Đoàn Hữu Nam", CreatedOn = new DateTime(2024, 01, 15) },
-            };
-            modelBuilder.Entity<Author>().HasData(authors);
-
             // Seed data for Categories
             List<Category> categories = new List<Category>()
             {
@@ -193,7 +172,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "duong_kack_menh.jpg",
                     Description = "Đường cách mệnh có giá trị thực tiễn lớn lao, tạo ra sự chuyển biến căn bản, nhanh chóng trong nhận thức và hành động cách mạng của cán bộ và đông đảo quần chúng, thể hiện rõ quan điểm tư tưởng của Nguyễn Ái Quốc trong thời kỳ chuẩn bị về chính trị, tư tưởng và tổ chức tiến tới việc thành lập Đảng Cộng sản Việt Nam, là một trong những văn kiện lý luận đầu tiên của Đảng ta, đặt cơ sở tư tưởng cho đường lối của cách mạng Việt Nam.",
                     CreatedOn = new DateTime(2023, 05, 17),
-                    AuthorId = authors[0].Id,
+                    AuthorName = "Hồ Chí Minh",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[0].Id,
                 },
@@ -209,7 +188,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "dao_duc_cm.png",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 17),
-                    AuthorId = authors[0].Id,
+                    AuthorName = "Hồ Chí Minh",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[0].Id,
                 },
@@ -225,7 +204,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "vhnt_cung_la_mot_mt.png",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 18),
-                    AuthorId = authors[0].Id,
+                    AuthorName = "Hồ Chí Minh",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[1].Id,
                 },
@@ -241,7 +220,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "tuoi_tho_du_doi.jpeg",
                     Description = "\"Tuổi Thơ Dữ Dội\" không phải chỉ là một câu chuyện cổ tích, mà là một câu chuyện có thật ở trần gian, ở đó, những con người tuổi nhỏ đã tham gia vào cuộc kháng chiến chống xâm lược bảo vệ Tổ quốc với một chuỗi những chiến công đầy ắp li kì và hấp dẫn.",
                     CreatedOn = new DateTime(2023, 05, 18),
-                    AuthorId = authors[1].Id,
+                    AuthorName = "Phùng Quán",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[4].Id,
                 },
@@ -257,7 +236,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "tuoi-tho-du-doi-t1.webp",
                     Description = "“Tuổi Thơ Dữ Dội” là một câu chuyện hay, cảm động viết về tuổi thơ. Sách dày 404 trang mà người đọc không bao giờ muốn ngừng lại, bị lôi cuốn vì những nhân vật ngây thơ có, khôn ranh có, anh hùng có, vì những sự việc khi thì ly kỳ, khi thì hài hước, khi thì gây xúc động đến ứa nước mắt...",
                     CreatedOn = new DateTime(2023, 05, 17),
-                    AuthorId = authors[1].Id,
+                    AuthorName = "Phùng Quán",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[4].Id,
                 },
@@ -273,7 +252,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "khoa_hoc_1.jpeg",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 17),
-                    AuthorId = authors[2].Id,
+                    AuthorName = "Mark Raskino - Graham Waller",
                     CategoryId = categories[1].Id,
                     BookShelfId = bookShelfs[2].Id,
                 },
@@ -289,7 +268,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "tieng_anh.jpeg",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 17),
-                    AuthorId = null,
+                    AuthorName = null,
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[5].Id,
                 },
@@ -305,7 +284,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "chu_han.png",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 19),
-                    AuthorId = null,
+                    AuthorName = null,
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[6].Id,
                 },
@@ -321,7 +300,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "SGK_1.jpg",
                     Description = null,
                     CreatedOn = new DateTime(2023, 08, 20),
-                    AuthorId = null,
+                    AuthorName = null,
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[7].Id,
                 },
@@ -337,7 +316,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "hacker.jpeg",
                     Description = "Hacker lược sử nói về những nhân vật, cỗ máy, sự kiện định hình cho văn hóa và đạo đức hacker từ những hacker đời đầu ở đại học MIT. Câu chuyện hấp dẫn bắt đầu từ các phòng thí nghiệm nghiên cứu máy tính đầu tiên đến các máy tính gia đình.",
                     CreatedOn = new DateTime(2023, 08, 21),
-                    AuthorId = authors[3].Id,
+                    AuthorName = "Steven Levy",
                     CategoryId = categories[2].Id,
                     BookShelfId = bookShelfs[8].Id,
                 },
@@ -353,7 +332,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "phap_luat.jpeg",
                     Description = "Luật An ninh mạng được Quốc hội thông qua ngày 12/6/2018. Luật gồm 7 Chương, 43 Điều.",
                     CreatedOn = new DateTime(2024, 01, 15),
-                    AuthorId = authors[4].Id,
+                    AuthorName = "Quốc hội nước CHXHCNVN",
                     CategoryId = categories[1].Id,
                     BookShelfId = bookShelfs[9].Id,
                 },
@@ -369,7 +348,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "ty_quay.jpeg",
                     Description = "“Tý quậy là một phần tuổi thơ tôi, của bạn bè tôi. Không có ý mong Tý trở thành nhân vật điển hình, tôi chỉ ước sao Tý quậy là một người bạn gần gũi, quen thuộc và sống đúng nghĩa tuổi thơ.Thật không khôn ngoan khi dạy trẻ phải suy nghĩ những gì, mà nên hướng cho tuổi thơ cách suy nghĩ. Một đứa trẻ không hoạt bát thì tuyệt đối sẽ không trở thành người thông minh.Có câu danh ngôn rằng: việc độc nhất vô nhị và không có gì thay thế, đó là hồi ức về tuổi thơ. Vậy khi làm sách Tý quậy, bên cạnh tình yêu thương trong tôi có cả sự trân trọng...” (Tác giả Đào Hải)",
                     CreatedOn = new DateTime(2024, 01, 15),
-                    AuthorId = authors[5].Id,
+                    AuthorName = "Đào Hải",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[10].Id,
                 },
@@ -385,7 +364,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "tieu_thuyet.jpeg",
                     Description = "Cuốn sách viết về những mâu thuẫn giữa họ Sầm và họ Hồ, con đường đưa Sầm Lay đến với cách mạng và quá trình Sầm Lay cùng bộ đội Cụ Hồ đưa ánh sáng cách mạng về giải phóng quê hương Suối Hoa của anh.",
                     CreatedOn = new DateTime(2024, 01, 15),
-                    AuthorId = authors[6].Id,
+                    AuthorName = "Đoàn Hữu Nam",
                     CategoryId = categories[0].Id,
                     BookShelfId = bookShelfs[11].Id,
                 },
@@ -401,7 +380,7 @@ namespace LibraryManagerApp.Data.Data
                     ImageUrl = "than_so_hoc.jpeg",
                     Description = "Thần số học bắt đầu phổ biến mạnh tại Việt Nam từ đầu năm 2020 trùng với thời điểm dịch Covid bắt đầu xâm nhập (chắc hẳn là có lý do của nó) và kéo dài cho đến ngày hôm nay. Quyển sách này dành cho tất cả những ai quan tâm và muốn nghiên cứu bài bản Thần số học nhằm mục đích ứng dụng hiệu quả.",
                     CreatedOn = new DateTime(2023, 05, 17),
-                    AuthorId = null,
+                    AuthorName = null,
                     CategoryId = categories[1].Id,
                     BookShelfId = bookShelfs[12].Id,
                 },

@@ -9,7 +9,7 @@ using System.Linq.Expressions;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.SignalR;
+//using Microsoft.AspNetCore.SignalR;
 using LibraryManagerApp.API.Hubs;
 
 namespace LibraryManagerApp.API.Controllers
@@ -20,17 +20,17 @@ namespace LibraryManagerApp.API.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly IHubContext<NotificationHub> _hubContext;
+        //private readonly IHubContext<NotificationHub> _hubContext;
 
         public BookController(
             IUnitOfWork unitOfWork, 
-            IWebHostEnvironment webHostEnvironment,
-            IHubContext<NotificationHub> hubContext
+            IWebHostEnvironment webHostEnvironment
+            //IHubContext<NotificationHub> hubContext
         )
         {
             _unitOfWork = unitOfWork;
             _webHostEnvironment = webHostEnvironment;
-            _hubContext = hubContext;
+            //_hubContext = hubContext;
         }
 
         [HttpGet]
@@ -38,9 +38,8 @@ namespace LibraryManagerApp.API.Controllers
             [FromQuery] string? searchString = "",
             [FromQuery] string? orderBy = "",
             [FromQuery] string? publishedYearRange = "",
-            [FromQuery] List<Guid>? authorIds = null,
             [FromQuery] List<Guid>? categoryIds = null,
-            [FromQuery] int pageNumber = 1,
+            [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10)
         {
             var booksQuery = _unitOfWork.BookRepository.GetAllInforsQuery();
@@ -58,8 +57,7 @@ namespace LibraryManagerApp.API.Controllers
                 TotalPages = b.TotalPages,
                 ImageUrl = $"{baseUrl}/images/books/{b.ImageUrl}",
                 Description = b.Description,
-                AuthorId = b.AuthorId,
-                AuthorName = b.Author.Name,
+                AuthorName = b.AuthorName,
                 CategoryId = b.CategoryId,
                 CategoryName = b.Category.Name,
                 BookShelfId = b.BookShelfId,
@@ -86,13 +84,13 @@ namespace LibraryManagerApp.API.Controllers
 
                 filterList.Add(b => yearStart <= b.PublishedYear && b.PublishedYear <= yearEnd);
             }
-            if (authorIds != null)
-            {
-                if (authorIds.Count() > 0)
-                {
-                    filterList.Add(b => (b.AuthorId != null) ? authorIds.Contains((Guid)b.AuthorId) : false);
-                }
-            }
+            //if (authorIds != null)
+            //{
+            //    if (authorIds.Count() > 0)
+            //    {
+            //        filterList.Add(b => (b.AuthorId != null) ? authorIds.Contains((Guid)b.AuthorId) : false);
+            //    }
+            //}
             if (categoryIds != null)
             {
                 if (categoryIds.Count() > 0)
@@ -165,11 +163,10 @@ namespace LibraryManagerApp.API.Controllers
                 filterList,
                 orderFunc,
                 "",
-                pageNumber,
+                page,
                 pageSize
             );
 
-            string userEmail = User.FindFirst(ClaimTypes.Name)?.Value;
             return Ok(paginatedBooks);
         }
 
@@ -191,8 +188,7 @@ namespace LibraryManagerApp.API.Controllers
                 TotalPages = b.TotalPages,
                 ImageUrl = $"{baseUrl}/images/books/{b.ImageUrl}",
                 Description = b.Description,
-                AuthorId = b.AuthorId,
-                AuthorName = b.Author.Name,
+                AuthorName = b.AuthorName,
                 CategoryId = b.CategoryId,
                 CategoryName = b.Category.Name,
                 BookShelfId = b.BookShelfId,
@@ -243,7 +239,7 @@ namespace LibraryManagerApp.API.Controllers
                 TotalPages = bookDto.TotalPages,
                 ImageUrl = uniqueFileName,
                 Description = bookDto.Description,
-                AuthorId = bookDto.AuthorId,
+                AuthorName = bookDto.AuthorName,
                 CategoryId = bookDto.CategoryId,
                 BookShelfId = bookDto.BookShelfId,
             };
@@ -253,7 +249,7 @@ namespace LibraryManagerApp.API.Controllers
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
             {
-                await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Library", $"Một quyển sách mới vừa được thêm! '{bookToCreate.Title}'");
+                //await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Library", $"Một quyển sách mới vừa được thêm! '{bookToCreate.Title}'");
 
                 return Ok("Created new book!");
             }
@@ -273,7 +269,7 @@ namespace LibraryManagerApp.API.Controllers
                 return NotFound("Book not found.");
             }
             existringBook.Title = model.Title;
-            existringBook.AuthorId = model.AuthorId;
+            existringBook.AuthorName = model.AuthorName;
             existringBook.Publisher = model.Publisher;
             existringBook.PublishedYear = model.PublishedYear;
             existringBook.Quantity = model.Quantity;

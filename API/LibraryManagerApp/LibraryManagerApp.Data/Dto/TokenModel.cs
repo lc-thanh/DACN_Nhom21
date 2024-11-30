@@ -1,8 +1,13 @@
-﻿namespace LibraryManagerApp.Data.Dto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LibraryManagerApp.Data.Dto
 {
     public class TokenModel
     {
-        public string? AccessToken { get; set; }
-        public string? RefreshToken { get; set; }
+        [Required]
+        public string AccessToken { get; set; }
+
+        [Required]
+        public string RefreshToken { get; set; }
     }
 }

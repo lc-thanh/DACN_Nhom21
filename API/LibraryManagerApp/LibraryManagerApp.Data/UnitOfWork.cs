@@ -20,8 +20,6 @@ namespace LibraryManagerApp.Data
 
         public IAdminRepository AdminRepository => new AdminRepository(_context);
 
-        public IAuthorRepository AuthorRepository => new AuthorRepository(_context);
-
         public IBookRepository BookRepository => new BookRepository(_context);
 
         public IBookShelfRepository BookShelfRepository => new BookShelfRepository(_context);
@@ -39,6 +37,8 @@ namespace LibraryManagerApp.Data
         public IMemberRepository MemberRepository => new MemberRepository(_context);
 
         public IUserRepository UserRepository => new UserRepository(_context);
+
+        public IUserTokenRepository UserTokenRepository => new UserTokenRepository(_context);
 
         public IBaseRepository<T> BaseRepository<T>() where T : class
         {

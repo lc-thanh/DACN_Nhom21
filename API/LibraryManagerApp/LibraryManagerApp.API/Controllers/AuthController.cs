@@ -48,13 +48,13 @@ namespace LibraryManagerApp.API.Controllers
 
             if (user == null)
             {
-                return Unauthorized(new { message = "Số điện thoại không tồn tại!", field = "phone" });
+                return StatusCode(422, new { message = "Số điện thoại không tồn tại!", field = "phone" });
             }
 
             // Check password
             if (!_userService.VerifyPassword(user.Password, login.Password))
             {
-                return Unauthorized(new { message = "Mật khẩu không chính xác!", field = "password" });
+                return StatusCode(422, new { message = "Mật khẩu không chính xác!", field = "password" });
             }
 
             JwtSecurityToken token;
@@ -85,19 +85,24 @@ namespace LibraryManagerApp.API.Controllers
 
             var refreshToken = GenerateRefreshToken();
             _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
-            user.RefreshToken = refreshToken;
-            user.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
 
-            _unitOfWork.UserRepository.Update(user);
+            UserToken newUserToken = new UserToken
+            {
+                UserId = user.Id,
+                RefreshToken = refreshToken,
+                ExpiresAt = DateTime.Now.AddDays(refreshTokenValidityInDays),
+                CreatedAt = DateTime.Now,
+            };
+            _unitOfWork.UserTokenRepository.Add(newUserToken);
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
                 return Ok(new
                 {
                     data = new
                     {
-                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
                         RefreshToken = refreshToken,
-                        Expiration = token.ValidTo,
+                        ExpiresAt = token.ValidTo,
                     },
                     message = "Đăng nhập thành công!"
                 });
@@ -106,7 +111,7 @@ namespace LibraryManagerApp.API.Controllers
         }
 
         [HttpPost("signup")]
-        public async Task<IActionResult> signUp([FromBody] UserSignUp signUp)
+        public async Task<IActionResult> SignUp([FromBody] UserSignUp signUp)
         {
             if (!ModelState.IsValid)
             {
@@ -127,7 +132,7 @@ namespace LibraryManagerApp.API.Controllers
             var phoneCheck = await _unitOfWork.UserRepository.GetByPhoneAsync(signUp.Phone);
             if (phoneCheck != null)
             {
-                return Conflict(new
+                return StatusCode(422, new
                 {
                     message = "Đã tồn tại số điện thoại này!",
                     field = "phone"
@@ -137,7 +142,7 @@ namespace LibraryManagerApp.API.Controllers
             var idCheck = await _unitOfWork.MemberRepository.GetByIndividualIdAsync(signUp.IndividualId);
             if (idCheck != null)
             {
-                return Conflict(new
+                return StatusCode(422, new
                 {
                     message = "Đã tồn tại mã sinh viên/giảng viên này!",
                     field = "individualId"
@@ -160,28 +165,58 @@ namespace LibraryManagerApp.API.Controllers
 
             if (saved_signup > 0)
             {
-                JwtSecurityToken token = GenerateJwtToken(signUp.Phone, "Member");
+                User userLogin = await _unitOfWork.UserRepository.GetByPhoneAsync(memberToCreate.Phone);
+                JwtSecurityToken token = GenerateJwtToken(memberToCreate.Phone, "Member");
                 var refreshToken = GenerateRefreshToken();
                 _ = int.TryParse(_configuration["JWT:RefreshTokenValidityInDays"], out int refreshTokenValidityInDays);
-                memberToCreate.RefreshToken = refreshToken;
-                memberToCreate.RefreshTokenExpiryTime = DateTime.Now.AddDays(refreshTokenValidityInDays);
-
-                _unitOfWork.MemberRepository.Update(memberToCreate);
+                UserToken newUserToken = new UserToken
+                {
+                    UserId = userLogin.Id,
+                    RefreshToken = refreshToken,
+                    ExpiresAt = DateTime.Now.AddDays(refreshTokenValidityInDays),
+                    CreatedAt = DateTime.Now,
+                };
+                _unitOfWork.UserTokenRepository.Add(newUserToken);
                 var saved_login = await _unitOfWork.SaveChangesAsync();
                 if (saved_login > 0)
                     return Ok(new
                     {
                         data = new
                         {
-                            Token = new JwtSecurityTokenHandler().WriteToken(token),
+                            AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
                             RefreshToken = refreshToken,
-                            Expiration = token.ValidTo
+                            ExpiresAt = token.ValidTo
                         },
                         message = "Đăng ký tài khoản mới thành công!"
                     });
 
                 return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
             }
+
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] string refreshToken)
+        {
+            if (refreshToken.Length != 88)
+            {
+                return BadRequest(new { message = "Đầu vào không hợp lệ!" });
+            }
+
+            UserToken? userToken = await _unitOfWork.UserTokenRepository.GetByRefreshToken(refreshToken);
+            if (userToken == null)
+                return BadRequest(new { message = "Token không hợp lệ!" });
+
+            string userPhone = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (!userToken.User.Phone.Equals(userPhone))
+                return Unauthorized(new { message = "Token không hợp lệ!" });
+
+            _unitOfWork.UserTokenRepository.Delete(userToken);
+            int saved = await _unitOfWork.SaveChangesAsync();
+            if (saved > 0)
+                return Ok(new { message = "Đăng xuất thành công!" });
 
             return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
@@ -297,32 +332,40 @@ namespace LibraryManagerApp.API.Controllers
         {
             if (tokenModel is null)
             {
-                return BadRequest("Invalid client request");
+                return BadRequest(new { message = "Đầu vào không hợp lệ!" });
             }
 
-            string? accessToken = tokenModel.AccessToken;
-            string? refreshToken = tokenModel.RefreshToken;
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = "Đầu vào không hợp lệ!" });
+
+            string accessToken = tokenModel.AccessToken;
+            string refreshToken = tokenModel.RefreshToken;
+
+            UserToken? userToken = await _unitOfWork.UserTokenRepository.GetByRefreshToken(refreshToken);
+            if (userToken == null || userToken.ExpiresAt <= DateTime.Now)
+            {
+                await _unitOfWork.UserTokenRepository.RemoveAllExpiredTokens();
+                return Unauthorized(new { message = "Token không hợp lệ!" });
+            }
 
             var principal = GetPrincipalFromExpiredToken(accessToken);
             if (principal == null)
             {
-                return BadRequest("Cannot Get Principal From Expired Token");
+                return Unauthorized(new { message = "Token không hợp lệ!" });
             }
 
             string userPhone = principal.Identity.Name;
-
             var user = await _unitOfWork.UserRepository.GetByPhoneAsync(userPhone);
-
-            if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
+            if (user == null || !userToken.UserId.Equals(user.Id))
             {
-                return BadRequest("Invalid access token or refresh token");
+                return Unauthorized(new { message = "Token không hợp lệ!" });
             }
 
             var newAccessToken = GenerateJwtToken(principal.Claims.ToList());
             var newRefreshToken = GenerateRefreshToken();
 
-            user.RefreshToken = newRefreshToken;
-            _unitOfWork.UserRepository.Update(user);
+            userToken.RefreshToken = newRefreshToken;
+            _unitOfWork.UserTokenRepository.Update(userToken);
             await _unitOfWork.SaveChangesAsync();
 
             return new ObjectResult(new

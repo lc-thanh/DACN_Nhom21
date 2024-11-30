@@ -30,15 +30,14 @@ namespace LibraryManagerApp.Data.Models
         [Required]
         public string Password { get; set; } // Hashed password
 
-        public string? RefreshToken { get; set; }
-
-        public DateTime? RefreshTokenExpiryTime { get; set; }
-
         [Required]
         public RoleEnum Role { get; set; }
 
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public IList<UserAction> UserActions { get; set; }
+
+        public IList<UserToken> UserTokens { get; set; }
+
     }
 }

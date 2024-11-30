@@ -32,8 +32,7 @@ namespace LibraryManagerApp.Data.Models
 
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
-        public Guid? AuthorId { get; set; }
-        public Author Author { get; set; }
+        public string? AuthorName { get; set; }
 
         public Guid? CategoryId { get; set; }
         public Category Category { get; set; }

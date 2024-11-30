@@ -7,7 +7,6 @@ namespace LibraryManagerApp.Data.Interfaces
     {
         LibraryManagerAppDbContext Context { get; }
         IAdminRepository AdminRepository { get; }
-        IAuthorRepository AuthorRepository { get; }
         IBookRepository BookRepository { get; }
         IBookShelfRepository BookShelfRepository { get; }
         ICabinetRepository CabinetRepository { get; }
@@ -17,6 +16,7 @@ namespace LibraryManagerApp.Data.Interfaces
         ILoanDetailRepository LoanDetailRepository { get; }
         IMemberRepository MemberRepository { get; }
         IUserRepository UserRepository { get; }
+        IUserTokenRepository UserTokenRepository { get; }
         IBaseRepository<T> BaseRepository<T>() where T : class;
         int SaveChanges();
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

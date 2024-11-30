@@ -14,7 +14,6 @@ namespace LibraryManagerApp.Data.Repository
         public IQueryable<Book> GetAllInforsQuery()
         {
             var books = _context.Books
-                .Include(b => b.Author)
                 .Include(b => b.Category)
                 .Include(b => b.BookShelf);
 
