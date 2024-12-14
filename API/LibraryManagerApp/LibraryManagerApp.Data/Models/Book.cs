@@ -26,8 +26,9 @@ namespace LibraryManagerApp.Data.Models
         public int TotalPages { get; set; } = 1;
 
         [MaxLength(512)]
-        public string? ImageUrl { get; set; }
+        public string ImageUrl { get; set; }
 
+        [MaxLength(2000)]
         public string? Description { get; set; }
 
         public DateTime CreatedOn { get; set; } = DateTime.Now;

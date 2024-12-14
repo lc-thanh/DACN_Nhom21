@@ -151,9 +151,9 @@ namespace LibraryManagerApp.Data.Data
             // Seed data for Categories
             List<Category> categories = new List<Category>()
             {
-                new Category() { Id = Guid.NewGuid(), Name = "Sách, Chuyên khảo, Tuyển tập", CreatedOn = new DateTime(2023, 05, 17) },
-                new Category() { Id = Guid.NewGuid(), Name = "Ấn phẩm định kỳ", CreatedOn = new DateTime(2023, 05, 17) },
-                new Category() { Id = Guid.NewGuid(), Name = "Bài trích", CreatedOn = new DateTime(2023, 05, 17) },
+                new Category() { Id = Guid.NewGuid(), Name = "Sách, Chuyên khảo, Tuyển tập", Description = "Bao gồm các loại sách giáo trình, sách tham khảo, chuyên khảo và các tuyển tập bài viết khoa học.", CreatedOn = new DateTime(2023, 05, 17) },
+                new Category() { Id = Guid.NewGuid(), Name = "Ấn phẩm định kỳ", Description = "Các ấn phẩm được xuất bản định kỳ như tạp chí, báo và các bản tin.", CreatedOn = new DateTime(2023, 05, 17) },
+                new Category() { Id = Guid.NewGuid(), Name = "Bài trích", Description = "Các bài viết trích từ các tài liệu khác nhau, thường là từ các ấn phẩm định kỳ hoặc tuyển tập.", CreatedOn = new DateTime(2023, 05, 17) },
             };
             modelBuilder.Entity<Category>().HasData(categories);
 

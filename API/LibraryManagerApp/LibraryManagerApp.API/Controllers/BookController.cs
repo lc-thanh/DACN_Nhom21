@@ -11,6 +11,9 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 //using Microsoft.AspNetCore.SignalR;
 using LibraryManagerApp.API.Hubs;
+using System.IO;
+using System.Drawing;
+using System.Collections;
 
 namespace LibraryManagerApp.API.Controllers
 {
@@ -196,6 +199,9 @@ namespace LibraryManagerApp.API.Controllers
                 CreatedOn = b.CreatedOn,
             }).FirstOrDefaultAsync(b => b.Id == id);
 
+            if ( bookViewModel == null )
+                return NotFound();
+
             return Ok(bookViewModel);
         }
 
@@ -251,41 +257,73 @@ namespace LibraryManagerApp.API.Controllers
             {
                 //await _hubContext.Clients.All.SendAsync("ReceiveMessage", "Library", $"Một quyển sách mới vừa được thêm! '{bookToCreate.Title}'");
 
-                return Ok("Created new book!");
+                return Ok(new { message = "Tạo sách mới thành công!" });
             }
-            return BadRequest("Some thing went wrong while saving!");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBook(Guid id, BookCreateModel model)
+        public async Task<IActionResult> UpdateBook(Guid id, [FromForm] BookCreateModel bookDto, [FromForm] IFormFile? image, [FromForm] bool isUpdateImage = false)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var existringBook = await _unitOfWork.BookRepository.GetByIdAsync(id);
-            if (existringBook == null)
+            var existingBook = await _unitOfWork.BookRepository.GetByIdAsync(id);
+            if (existingBook == null)
             {
-                return NotFound("Book not found.");
+                return NotFound(new { message = "Không tìm thấy sách!" });
             }
-            existringBook.Title = model.Title;
-            existringBook.AuthorName = model.AuthorName;
-            existringBook.Publisher = model.Publisher;
-            existringBook.PublishedYear = model.PublishedYear;
-            existringBook.Quantity = model.Quantity;
-            existringBook.TotalPages = model.TotalPages;
-            //existringBook.ImageUrl = model.ImageUrl;
-            existringBook.Description = model.Description;
-            existringBook.CategoryId = model.CategoryId;
-            existringBook.BookShelfId = model.BookShelfId;
 
-            _unitOfWork.BookRepository.Update(existringBook);
+            existingBook.Title = bookDto.Title;
+            existingBook.AuthorName = bookDto.AuthorName;
+            existingBook.Publisher = bookDto.Publisher;
+            existingBook.PublishedYear = bookDto.PublishedYear;
+            existingBook.Quantity = bookDto.Quantity;
+            existingBook.TotalPages = bookDto.TotalPages;
+            existingBook.Description = bookDto.Description;
+            existingBook.CategoryId = bookDto.CategoryId;
+            existingBook.BookShelfId = bookDto.BookShelfId;
+
+            if (isUpdateImage)
+            {
+                // Xử lý xóa ảnh cũ nếu có
+                if (!existingBook.ImageUrl.Equals("null.png"))
+                {
+                    string oldImagePath = Path.Combine(_webHostEnvironment.WebRootPath, "images/books", existingBook.ImageUrl);
+                    FileInfo file = new FileInfo(oldImagePath);
+                    if (file.Exists)
+                    {
+                        file.Delete();
+                    }
+                }
+
+                // Xử lý upload ảnh
+                string uniqueFileName = "";
+                if (image != null)
+                {
+                    string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images/books");
+                    uniqueFileName = Guid.NewGuid().ToString() + "_" + image.FileName;
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                    using (var fileStream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await image.CopyToAsync(fileStream);
+                    }
+                }
+                else
+                {
+                    uniqueFileName = "null.png";
+                }
+                existingBook.ImageUrl = uniqueFileName;
+            }
+
+            _unitOfWork.BookRepository.Update(existingBook);
             var saved = await _unitOfWork.SaveChangesAsync();
             if(saved > 0)
             {
-                return Ok("Book updated successfully.");
+                return Ok(new { message = "Cập nhật sách thành công!" });
             }
-            return StatusCode(500, "A problem occurred while updating the book.");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
         [HttpDelete("{id}")]
@@ -294,15 +332,35 @@ namespace LibraryManagerApp.API.Controllers
             var existingBook = await _unitOfWork.BookRepository.GetByIdAsync(id);
             if (existingBook == null)
             {
-                return NotFound("Book not found");
+                return NotFound(new { message = "Không tìm thấy sách!" });
             }
             _unitOfWork.BookRepository.Delete(existingBook);
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
             {
-                return Ok("Book deleted seccessfully.");
+                return Ok(new { message = "Đã xóa sách!" });
             }
-            return StatusCode(500, "A problem occurred while deleting the book.");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteBooks([FromBody] List<Guid> IDs)
+        {
+            foreach (Guid id in IDs)
+            {
+                var existingBook = await _unitOfWork.BookRepository.GetByIdAsync(id);
+                if (existingBook == null)
+                {
+                    return NotFound(new { message = $"Không tìm thấy sách có ID: {id}" });
+                }
+                _unitOfWork.BookRepository.Delete(existingBook);
+            }
+            var saved = await _unitOfWork.SaveChangesAsync();
+            if (saved > 0)
+            {
+                return Ok(new { message = "Hoàn tất xóa sách!" });
+            }
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
     }
 }
