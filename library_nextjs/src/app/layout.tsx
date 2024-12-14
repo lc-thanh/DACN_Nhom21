@@ -22,7 +22,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("sessionToken");
+  const accessToken = cookieStore.get("accessToken");
+  const refreshToken = cookieStore.get("refreshToken");
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -33,7 +34,12 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AppProvider initSessionToken={sessionToken?.value}>
+          <AppProvider
+            initTokens={{
+              accessToken: accessToken?.value,
+              refreshToken: refreshToken?.value,
+            }}
+          >
             {children}
           </AppProvider>
           <Toaster richColors />

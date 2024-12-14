@@ -19,6 +19,7 @@ import {
   Inbox,
   Search,
   Settings,
+  LayoutList,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -62,7 +63,14 @@ const bookManagementItems = [
     icon: SquareLibrary,
   },
   {
-    title: "Quản lý mượn/trả",
+    title: "Quản lý danh mục",
+    url: "/dashboard/category",
+    icon: LayoutList,
+  },
+];
+const loanManagementItems = [
+  {
+    title: "Quản lý phiếu mượn",
     url: "#",
     icon: Tag,
   },
@@ -90,6 +98,23 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {homeItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Quản lý mượn/trả</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {loanManagementItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link href={item.url}>

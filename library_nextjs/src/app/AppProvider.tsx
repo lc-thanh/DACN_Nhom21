@@ -1,6 +1,6 @@
 "use client";
 
-import { clientSessionToken } from "@/lib/http";
+import { clientTokens } from "@/lib/http";
 import { useState } from "react";
 
 // const AppContext = createContext({
@@ -35,10 +35,10 @@ import { useState } from "react";
 // Mà là để set giá trị cho clientSessionToken
 export default function AppProvider({
   children,
-  initSessionToken = "",
+  initTokens,
 }: {
   children: React.ReactNode;
-  initSessionToken?: string;
+  initTokens: { accessToken?: string; refreshToken?: string };
 }) {
   // Sử dụng useState() thay vì useEffect() có 2 lợi thế:
   // 1. useState() chạy cùng lúc với quá trình render, không cần chờ
@@ -49,8 +49,10 @@ export default function AppProvider({
     // Nếu không làm điều này thì sẽ bị lỗi khi chạy ở môi trường development
     // (Chạy ở môi trường production thì không sao)
     // Vì khi chạy ở môi trường development, các client component cũng sẽ chạy ở server
-    if (typeof window !== "undefined")
-      clientSessionToken.value = initSessionToken;
+    if (typeof window !== "undefined") {
+      clientTokens.accessToken = initTokens.accessToken ?? "";
+      clientTokens.refreshToken = initTokens.refreshToken ?? "";
+    }
   });
   return <>{children}</>;
 }
