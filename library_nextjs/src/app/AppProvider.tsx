@@ -38,7 +38,11 @@ export default function AppProvider({
   initTokens,
 }: {
   children: React.ReactNode;
-  initTokens: { accessToken?: string; refreshToken?: string };
+  initTokens: {
+    accessToken?: string;
+    refreshToken?: string;
+    expiresAt?: string;
+  };
 }) {
   // Sử dụng useState() thay vì useEffect() có 2 lợi thế:
   // 1. useState() chạy cùng lúc với quá trình render, không cần chờ
@@ -52,6 +56,7 @@ export default function AppProvider({
     if (typeof window !== "undefined") {
       clientTokens.accessToken = initTokens.accessToken ?? "";
       clientTokens.refreshToken = initTokens.refreshToken ?? "";
+      clientTokens.expiresAt = initTokens.expiresAt ?? "";
     }
   });
   return <>{children}</>;

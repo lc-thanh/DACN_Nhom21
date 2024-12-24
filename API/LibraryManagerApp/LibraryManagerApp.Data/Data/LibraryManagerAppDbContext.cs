@@ -44,13 +44,15 @@ namespace LibraryManagerApp.Data.Data
                 .HasOne<Category>(b => b.Category)
                 .WithMany(c => c.Books)
                 .HasForeignKey(b => b.CategoryId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Book>()
                 .HasOne<BookShelf>(b => b.BookShelf)
                 .WithMany(bs => bs.Books)
                 .HasForeignKey(b => b.BookShelfId)
-                .IsRequired(false);
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<BookShelf>()
                 .HasOne<Cabinet>(bs => bs.Cabinet)
@@ -61,13 +63,13 @@ namespace LibraryManagerApp.Data.Data
                 .HasOne<Member>(l => l.Member)
                 .WithMany(m => m.Loans)
                 .HasForeignKey(l => l.MemberId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<Loan>()
                 .HasOne<Librarian>(l => l.Librarian)
                 .WithMany(l => l.Loans)
                 .HasForeignKey(l => l.LibrarianId)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<LoanDetail>().HasKey(ld => new { ld.LoanId, ld.BookId });
 
@@ -231,7 +233,7 @@ namespace LibraryManagerApp.Data.Data
                     Publisher = "Nhà xuất bản Kim đồng",
                     PublishedYear = 2021,
                     Quantity = 8,
-                    AvailableQuantity = 8,
+                    AvailableQuantity = 7,
                     TotalPages = 404,
                     ImageUrl = "tuoi-tho-du-doi-t1.webp",
                     Description = "“Tuổi Thơ Dữ Dội” là một câu chuyện hay, cảm động viết về tuổi thơ. Sách dày 404 trang mà người đọc không bao giờ muốn ngừng lại, bị lôi cuốn vì những nhân vật ngây thơ có, khôn ranh có, anh hùng có, vì những sự việc khi thì ly kỳ, khi thì hài hước, khi thì gây xúc động đến ứa nước mắt...",
@@ -343,7 +345,7 @@ namespace LibraryManagerApp.Data.Data
                     Publisher = "NXB Kim Đồng",
                     PublishedYear = 2015,
                     Quantity = 10,
-                    AvailableQuantity = 10,
+                    AvailableQuantity = 9,
                     TotalPages = 100,
                     ImageUrl = "ty_quay.jpeg",
                     Description = "“Tý quậy là một phần tuổi thơ tôi, của bạn bè tôi. Không có ý mong Tý trở thành nhân vật điển hình, tôi chỉ ước sao Tý quậy là một người bạn gần gũi, quen thuộc và sống đúng nghĩa tuổi thơ.Thật không khôn ngoan khi dạy trẻ phải suy nghĩ những gì, mà nên hướng cho tuổi thơ cách suy nghĩ. Một đứa trẻ không hoạt bát thì tuyệt đối sẽ không trở thành người thông minh.Có câu danh ngôn rằng: việc độc nhất vô nhị và không có gì thay thế, đó là hồi ức về tuổi thơ. Vậy khi làm sách Tý quậy, bên cạnh tình yêu thương trong tôi có cả sự trân trọng...” (Tác giả Đào Hải)",
@@ -421,7 +423,7 @@ namespace LibraryManagerApp.Data.Data
 
             List<Member> members = new List<Member>()
             {
-                new Member()
+                new Member() // 0
                 {
                     Id = Guid.NewGuid(),
                     FullName = "Lê Thị B",
@@ -431,9 +433,10 @@ namespace LibraryManagerApp.Data.Data
                     Address = "Hải Dương",
                     DateOfBirth = new DateTime(2002, 11, 18),
                     Role = Enum.RoleEnum.Member,
-                    Password = _userService.HashPassword("Abc123!@#")
+                    Password = _userService.HashPassword("Abc123!@#"),
+                    Status = Enum.MemberStatus.OnLoan
                 },
-                new Member()
+                new Member() // 1
                 {
                     Id = Guid.NewGuid(),
                     FullName = "Trần Văn C",
@@ -443,10 +446,172 @@ namespace LibraryManagerApp.Data.Data
                     Address = "Quảng Ninh",
                     DateOfBirth = new DateTime(2004, 10, 05),
                     Role = Enum.RoleEnum.Member,
-                    Password = _userService.HashPassword("Abc123!@#")
+                    Password = _userService.HashPassword("Abc123!@#"),
+                    Status = Enum.MemberStatus.Normal
+                },
+                new Member() // 2
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Nguyễn Đức Thắng",
+                    Email = "nguyendthang@ex.com",
+                    Phone = "0834361821",
+                    IndividualId = "2021604798",
+                    DateOfBirth = new DateTime(2003, 11, 05),
+                    Role = Enum.RoleEnum.Member,
+                    Password = _userService.HashPassword("Abc123!@#"),
+                    Status = Enum.MemberStatus.Normal
+                },
+                new Member() // 3
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Phạm Đức Thắng",
+                    Email = "phamdthang@ex.com",
+                    Phone = "0834361834",
+                    IndividualId = "2021604984",
+                    Address = "Hải Dương",
+                    DateOfBirth = new DateTime(2002, 08, 04),
+                    Role = Enum.RoleEnum.Member,
+                    Password = _userService.HashPassword("Abc123!@#"),
+                    Status = Enum.MemberStatus.Normal
+                },
+                new Member() // 4
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = "Nguyễn Xuân Thành",
+                    Email = "nguyenxthanh@ex.com",
+                    Phone = "0834361844",
+                    IndividualId = "2021603021",
+                    Address = "Nam Định",
+                    DateOfBirth = new DateTime(2003, 06, 07),
+                    Role = Enum.RoleEnum.Member,
+                    Password = _userService.HashPassword("Abc123!@#"),
+                    Status = Enum.MemberStatus.Normal
                 }
             };
             modelBuilder.Entity<Member>().HasData(members);
+
+            List<Loan> loans = new List<Loan>()
+            {
+                new Loan() // 0
+                {
+                    Id= Guid.NewGuid(),
+                    MemberId = members[0].Id,
+                    LibrarianId = librarians[0].Id,
+                    DueDate = new DateTime(2024, 12, 20),
+                    LoanCode = "ACBXY123",
+                    Status = Enum.StatusEnum.OnLoan,
+                    LoanDate = new DateTime(2024, 12, 17),
+                },
+                new Loan() // 1
+                {
+                    Id= Guid.NewGuid(),
+                    MemberId = members[1].Id,
+                    LibrarianId = librarians[0].Id,
+                    DueDate = new DateTime(2024, 11, 15),
+                    LoanCode = "HCGDT669",
+                    Status = Enum.StatusEnum.Returned,
+                    ReturnedDate = new DateTime(2024, 11, 12),
+                    LoanDate = new DateTime(2024, 11, 10),
+                },
+                new Loan() // 2
+                {
+                    Id= Guid.NewGuid(),
+                    MemberId = members[2].Id,
+                    LibrarianId = librarians[0].Id,
+                    DueDate = new DateTime(2024, 11, 20),
+                    LoanCode = "HCGDT845",
+                    Status = Enum.StatusEnum.Returned,
+                    ReturnedDate = new DateTime(2024, 11, 21),
+                    LoanDate = new DateTime(2024, 11, 17),
+                },
+                new Loan() // 3
+                {
+                    Id= Guid.NewGuid(),
+                    MemberId = members[3].Id,
+                    LibrarianId = admins[0].Id,
+                    LoanDate = new DateTime(2024, 10, 10),
+                    DueDate = new DateTime(2024, 10, 17),
+                    ReturnedDate = new DateTime(2024, 10, 15),
+                    LoanCode = "JGIRU857",
+                    Status = Enum.StatusEnum.Returned,
+                },
+                new Loan() // 4
+                {
+                    Id= Guid.NewGuid(),
+                    MemberId = members[4].Id,
+                    LibrarianId = librarians[0].Id,
+                    LoanDate = new DateTime(2024, 09, 05),
+                    DueDate = new DateTime(2024, 09, 12),
+                    ReturnedDate = new DateTime(2024, 09, 13),
+                    LoanCode = "KFODY748",
+                    Status = Enum.StatusEnum.Returned,
+                },
+                new Loan() // 5
+                {
+                    Id= Guid.NewGuid(),
+                    MemberId = members[3].Id,
+                    LibrarianId = admins[0].Id,
+                    LoanDate = new DateTime(2024, 09, 10),
+                    DueDate = new DateTime(2024, 09, 18),
+                    ReturnedDate = new DateTime(2024, 09, 15),
+                    LoanCode = "CNFJT094",
+                    Status = Enum.StatusEnum.Returned,
+                }
+            };
+            modelBuilder.Entity<Loan>().HasData(loans);
+
+            List<LoanDetail> loanDetails = new List<LoanDetail>()
+            {
+                new LoanDetail() // 0
+                {
+                    BookId = books[4].Id,
+                    Quantity = 1,
+                    LoanId = loans[0].Id,
+                },
+                new LoanDetail() // 1
+                {
+                    BookId = books[11].Id,
+                    Quantity = 1,
+                    LoanId = loans[0].Id,
+                },
+                new LoanDetail() // 2
+                {
+                    BookId = books[8].Id,
+                    Quantity = 1,
+                    LoanId = loans[1].Id,
+                },
+                new LoanDetail() // 3
+                {
+                    BookId = books[9].Id,
+                    Quantity = 1,
+                    LoanId = loans[1].Id,
+                },
+                new LoanDetail() // 4
+                {
+                    BookId = books[3].Id,
+                    Quantity = 1,
+                    LoanId = loans[2].Id,
+                },
+                new LoanDetail() // 5
+                {
+                    BookId = books[2].Id,
+                    Quantity = 1,
+                    LoanId = loans[3].Id,
+                },
+                new LoanDetail() // 4
+                {
+                    BookId = books[10].Id,
+                    Quantity = 1,
+                    LoanId = loans[4].Id,
+                },
+                new LoanDetail() // 5
+                {
+                    BookId = books[7].Id,
+                    Quantity = 1,
+                    LoanId = loans[5].Id,
+                }
+            };
+            modelBuilder.Entity<LoanDetail>().HasData(loanDetails);
 
             base.OnModelCreating(modelBuilder);
         }

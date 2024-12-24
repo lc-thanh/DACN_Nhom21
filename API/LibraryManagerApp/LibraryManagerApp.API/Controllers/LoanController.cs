@@ -21,12 +21,30 @@ namespace LibraryManagerApp.API.Controllers
             _unitOfWork = unitOfWork;
         }
 
-        [Authorize(Roles = "Librarian")]
+        private static IList<string>? generateLoanWarning(StatusEnum status, List<Book> bookList) 
+        {
+            if (status != StatusEnum.Pending && status != StatusEnum.Approved)
+                return null;
+
+            List<string>? loanWarning = new List<string>();
+
+            foreach (Book book in bookList)
+            {
+                if (book.AvailableQuantity == 0)
+                    loanWarning.Add($"Sách {book.Title} đang hết");
+            }
+
+            if (loanWarning.Count > 0)
+                return loanWarning;
+            return null;
+        }
+
+        [Authorize(Roles = "Admin,Librarian")]
         [HttpGet]
         public async Task<IActionResult> GetLoans(
-            [FromQuery] string? memberEmail,
-            [FromQuery] string? timePeriod,
-            [FromQuery] StatusEnum? status,
+            [FromQuery] string? searchString,
+            [FromQuery] string? loanDateTimePeriod,
+            [FromQuery] StatusEnum? statusFilter,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 10
         )
@@ -42,30 +60,36 @@ namespace LibraryManagerApp.API.Controllers
                 ReturnedDate = l.ReturnedDate,
                 Status = l.Status,
                 MemberId = l.MemberId,
-                MemberEmail = l.Member.Email,
+                MemberPhone = l.Member.Phone,
                 MemberFullName = l.Member.FullName,
                 LibrarianId = l.LibrarianId,
                 LibrarianFullName = l.Librarian.FullName,
-                BookNames = l.LoanDetails.Select(ld => ld.Book.Title).ToList()
+                BookNames = l.LoanDetails.Select(ld => ld.Book.Title).ToList(),
+                Warning = l.Status.Equals(StatusEnum.Pending) ? generateLoanWarning(l.Status, l.LoanDetails.Select(ld => ld.Book).ToList()) : null
             });
 
 
             List<Expression<Func<LoanViewModel, bool>>> filterList = new List<Expression<Func<LoanViewModel, bool>>>();
-            if (!string.IsNullOrEmpty(memberEmail))
+            if (!string.IsNullOrEmpty(searchString))
             {
-                filterList.Add(l => l.MemberEmail.Equals(memberEmail));
+                filterList.Add(l =>
+                    l.MemberFullName.ToLower().Contains(searchString.ToLower()) ||
+                    l.LibrarianFullName.ToLower().Contains(searchString.ToLower()) ||
+                    l.LoanCode.ToLower().Contains(searchString.ToLower()) ||
+                    l.MemberPhone.Contains(searchString)
+                );
             }
-            if (!string.IsNullOrEmpty(timePeriod))
+            if (!string.IsNullOrEmpty(loanDateTimePeriod))
             {
-                DateTime.TryParse(timePeriod.Split('-')[0], out DateTime dateStart);
+                DateTime.TryParse(loanDateTimePeriod.Split('-')[0], out DateTime dateStart);
 
-                DateTime.TryParse(timePeriod.Split('-')[1], out DateTime dateEnd);
+                DateTime.TryParse(loanDateTimePeriod.Split('-')[1], out DateTime dateEnd);
 
                 filterList.Add(l => dateStart <= l.LoanDate && l.LoanDate <= dateEnd);
             }
-            if (status != null)
+            if (statusFilter != null)
             {
-                filterList.Add(l => l.Status == status);
+                filterList.Add(l => l.Status == statusFilter);
             }
 
 
@@ -87,23 +111,18 @@ namespace LibraryManagerApp.API.Controllers
             return Ok(paginatedLoans);
         }
 
-        [Authorize(Roles = "Librarian")]
+        [Authorize(Roles = "Librarian,Admin")]
         [HttpPost]
         public async Task<IActionResult> CreateLoan([FromBody] LoanCreateModel loanDto)
         {
-            if(loanDto == null || !loanDto.BookIds.Any())
-            {
-                return BadRequest("Invalid loan data.");
-            }
-
             // Find member
-            var member = await _unitOfWork.UserRepository.GetByEmailAsync(loanDto.MemberEmail);
+            var member = await _unitOfWork.MemberRepository.GetByPhoneAsync(loanDto.MemberPhone);
             if (member == null)
-                return NotFound("Cannot find user with provided email");
+                return NotFound(new { message = "Không tìm thấy người dùng với số điện thoại đã cho!" });
 
             // Get Librarian created this Loan
-            string librarianEmail = User.FindFirst(ClaimTypes.Name)?.Value;
-            var librarian = await _unitOfWork.UserRepository.GetByEmailAsync(librarianEmail);
+            string librarianPhone = User.FindFirst(ClaimTypes.Name)?.Value;
+            var librarian = await _unitOfWork.UserRepository.GetByPhoneAsync(librarianPhone);
 
             string loanCode = _unitOfWork.LoanRepository.GenerateLoanCode();
             while (await _unitOfWork.LoanRepository.FindByCodeAsync(loanCode) != null)
@@ -111,75 +130,102 @@ namespace LibraryManagerApp.API.Controllers
                 loanCode = _unitOfWork.LoanRepository.GenerateLoanCode();
             }
 
+            if (loanDto.DueDate <  DateTime.Now) 
+            {
+                return BadRequest(new { message = "Thời gian không hợp lệ!" });
+            }
+
+            DateTime dueDate = new DateTime(loanDto.DueDate.Year, loanDto.DueDate.Month, loanDto.DueDate.Day, 23, 59, 0);
+
             var loan = new Loan
             {
+                Status = StatusEnum.OnLoan,
                 MemberId = member.Id,
                 LibrarianId = librarian.Id,
-                LoanDate = loanDto.LoanDate,
-                DueDate = loanDto.DueDate,
+                LoanDate = DateTime.Now,
+                DueDate = dueDate,
                 LoanCode = loanCode,
             };
 
-            foreach (var bookId in loanDto.BookIds)
+            foreach (var bookString in loanDto.BookIdAndQuantity)
             {
+                Guid bookId = new Guid(bookString.Split('#')[0]);
+                int quantity;
+
+                if (!Int32.TryParse(bookString.Split('#')[1], out quantity))
+                {
+                    return BadRequest(new { message = "Đầu vào không hợp lệ!" });
+                }
+
                 var book = await _unitOfWork.BookRepository.GetByIdAsync(bookId);
                 if (book == null)
-                    { continue; }
+                    { return BadRequest(new { message = "Không tìm thấy sách!" }); }
                 if (book.AvailableQuantity == 0)
-                    { continue; }
+                    { return BadRequest(new { message = "Có sách đang hết!" }); }
 
                 var loanDetail = new LoanDetail
                 {
                     Book = book,
                     Loan = loan,
-                    Quantity = 1
+                    Quantity = quantity
                 };
 
-                book.AvailableQuantity--;
+                book.AvailableQuantity = book.AvailableQuantity - quantity;
                 _unitOfWork.BookRepository.Update(book);
                 _unitOfWork.LoanDetailRepository.Add(loanDetail);
             }
 
             _unitOfWork.LoanRepository.Add(loan);
+
+            if (member.Status != MemberStatus.Overdue)
+                member.Status = MemberStatus.OnLoan;
+            _unitOfWork.MemberRepository.Update(member);
+
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
             {
-                return Ok("Created new loan successfully!");
+                return Ok(new { message = "Tạo phiếu mượn thành công!" });
             }
-            return BadRequest("Something wrong while create loan!");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
-        [Authorize(Roles = "Librarian")]
-        [HttpPost("{loanId}")]
+        [Authorize(Roles = "Admin,Librarian")]
+        [HttpPost("{loanId}/return-book")]
         public async Task<IActionResult> ReturnBooks(Guid loanId)
         {
             var loan = await _unitOfWork.LoanRepository.GetAllInforsQuery().FirstOrDefaultAsync(l => l.Id == loanId);
             if (loan == null)
-                return BadRequest("Cannot find loan with provided id");
+                return BadRequest(new { message = "Không tìm thấy phiếu!" });
 
-            if (loan.Status == StatusEnum.Returned)
-                return BadRequest("This loan was already returned!");
+            if (loan.Status != StatusEnum.OnLoan && loan.Status != StatusEnum.Overdue)
+                return BadRequest(new { message = "Trạng thái phiếu không hợp lệ!" });
 
             loan.Status = StatusEnum.Returned;
             loan.ReturnedDate = DateTime.Now;
             _unitOfWork.LoanRepository.Update(loan);
 
-            // Optionally, update book quantities if needed
+            // Cập nhật lại member status về Normal nếu đang không còn mượn phiếu nào
+            int? memberOnLoansCount = await _unitOfWork.MemberRepository.OnLoansCount(loan.MemberId);
+            if (memberOnLoansCount != null)
+                if (memberOnLoansCount == 0)
+                    loan.Member.Status = MemberStatus.Normal;
+            _unitOfWork.MemberRepository.Update(loan.Member);
+
             foreach (var detail in loan.LoanDetails)
             {
                 var book = await _unitOfWork.BookRepository.GetByIdAsync(detail.BookId);
                 if (book != null)
                 {
-                    book.AvailableQuantity++;
+                    book.AvailableQuantity += detail.Quantity;
                     _unitOfWork.BookRepository.Update(book);
                 }
             }
 
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
-                return Ok("Books returned successfully.");
+                return Ok(new { message = "Đã trả sách!" });
 
-            return BadRequest("Something went wrong while save changes!");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
 

@@ -138,7 +138,9 @@ export function TableFacetedFilter({
                         aria-hidden="true"
                       />
                     )}
-                    <span>{option.label}</span>
+                    <span className={`text-${option.color}-500`}>
+                      {option.label}
+                    </span>
                     {(option.count || option.count === 0) && (
                       <span className="ml-auto flex size-4 items-center justify-center font-mono text-xs">
                         {option.count}

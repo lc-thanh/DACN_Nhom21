@@ -11,6 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { handleApiError } from "@/lib/utils";
 import {
   CreateCategoryBody,
@@ -76,7 +77,7 @@ export default function CreateCategoryForm({
             <FormItem>
               <FormLabel>Mô tả</FormLabel>
               <FormControl>
-                <Input placeholder="Nhập mô tả" {...field} />
+                <Textarea placeholder="Nhập mô tả..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

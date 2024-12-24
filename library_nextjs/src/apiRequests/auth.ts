@@ -23,8 +23,28 @@ const authApiRequests = {
         Authorization: `Bearer ${accessToken}`,
       },
     }),
-  logoutFromNextClientToNextServer: () =>
-    http.post<MessageResType>("/api/auth/logout", {}, { baseUrl: "" }),
+  logoutFromNextClientToNextServer: (
+    force?: boolean | undefined,
+    signal?: AbortSignal | undefined
+  ) =>
+    http.post<MessageResType>(
+      "/api/auth/logout",
+      { force },
+      { baseUrl: "", signal }
+    ),
+  refreshTokenFromNextServerToServer: ({
+    accessToken,
+    refreshToken,
+  }: {
+    accessToken: string;
+    refreshToken: string;
+  }) =>
+    http.post<LoginResType>("/Auths/refresh-token", {
+      accessToken,
+      refreshToken,
+    }),
+  refreshTokenFromNextClientToNextServer: () =>
+    http.post<LoginResType>("/api/auth/refresh-token", {}, { baseUrl: "" }),
 };
 
 export default authApiRequests;

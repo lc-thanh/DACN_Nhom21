@@ -16,15 +16,22 @@ import { Input } from "@/components/ui/input";
 import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
 import { PasswordField } from "@/components/ui/password-input";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import authApiRequests from "@/apiRequests/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { handleApiError } from "@/lib/utils";
 
 export function LoginForm() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.has("redirectFrom")) {
+      toast.info("Bạn cần đăng nhập để tiếp tục");
+    }
+  }, [searchParams]);
 
   const form = useForm<LoginBodyType>({
     resolver: zodResolver(LoginBody),
@@ -39,7 +46,7 @@ export function LoginForm() {
     try {
       await authApiRequests.login(values);
       toast.success("Đăng nhập thành công!");
-      router.push("/me");
+      router.push("/dashboard");
     } catch (error: any) {
       handleApiError({
         error,
@@ -81,7 +88,7 @@ export function LoginForm() {
             </span>
           }
           placeholder="Nhập mật khẩu"
-          description={"Quên mật khẩu?"}
+          // description={"Quên mật khẩu?"}
         />
 
         <Button type="submit" className="!mt-8 w-full" disabled={loading}>

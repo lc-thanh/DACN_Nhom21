@@ -96,7 +96,6 @@ export default function EditBookForm({ bookId }: { bookId: string }) {
     try {
       setLoadingUpdate(true);
       await bookApiRequests.update(bookId, { data: values, isImageChanged });
-      console.log("isImageChanged", isImageChanged);
 
       toast.success("Cập nhật sách thành công!");
     } catch (error) {

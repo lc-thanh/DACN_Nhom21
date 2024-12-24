@@ -1,6 +1,6 @@
 ﻿namespace LibraryManagerApp.Data.Models
 {
-    public class Admin : User
+    public class Admin : Librarian
     {
     }
 }

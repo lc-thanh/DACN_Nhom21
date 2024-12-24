@@ -2,6 +2,8 @@
 {
     public enum StatusEnum
     {
+        Pending,
+        Approved,
         OnLoan,
         Returned,
         Overdue

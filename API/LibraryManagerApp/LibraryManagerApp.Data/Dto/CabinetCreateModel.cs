@@ -9,6 +9,6 @@ namespace LibraryManagerApp.Data.Dto
         public string Name { get; set; }
 
         [MaxLength(50)]
-        public string Location { get; set; }
+        public string? Location { get; set; }
     }
 }

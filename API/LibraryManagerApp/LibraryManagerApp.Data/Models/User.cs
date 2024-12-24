@@ -19,7 +19,7 @@ namespace LibraryManagerApp.Data.Models
 
         [Required]
         [MaxLength(12)]
-        [RegularExpression(@"^(03|05|07|08|09|01[2|6|8|9])([0-9]{8})$", ErrorMessage = "PhoneNumber is not in correct format!")]
+        [RegularExpression(@"^(03|05|07|08|09|01[2|6|8|9])([0-9]{8})$", ErrorMessage = "Số điện thoại không đúng định dạng!")]
         public string Phone { get; set; }
 
         [MaxLength(255)]
@@ -39,5 +39,6 @@ namespace LibraryManagerApp.Data.Models
 
         public IList<UserToken> UserTokens { get; set; }
 
+        public bool isLocked { get; set; } = false;
     }
 }

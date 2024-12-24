@@ -17,13 +17,20 @@ namespace LibraryManagerApp.API.Controllers
             _unitOfWork = unitOfWork;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetCabinets()
+        {
+            var cabinets = await _unitOfWork.CabinetRepository.GetAllCabinetsWithAllInfors();
+            return Ok(cabinets);
+        }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCabinetById(Guid id)
         {
-            var cabinet = await _unitOfWork.CabinetRepository.GetByIdAsync(id);
+            var cabinet = await _unitOfWork.CabinetRepository.GetCabinetWithAllInfors(id);
             if (cabinet == null)
             {
-                return NotFound("Cabinet not found.");
+                return NotFound(new { message = "Không tìm thấy tủ sách!" });
             }
             return Ok(cabinet);
         }
@@ -31,16 +38,6 @@ namespace LibraryManagerApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateCabinet(CabinetCreateModel cabinetDto)
         {
-            if (cabinetDto == null)
-            {
-                return BadRequest();
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var cabinetToCreate = new Cabinet
             {
                 Name = cabinetDto.Name,
@@ -52,29 +49,19 @@ namespace LibraryManagerApp.API.Controllers
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
             {
-                return Ok("New cabinet created successfully");
+                return Ok(new { message = "Tạo tủ mới thành công!" });
             }
 
-            return BadRequest("Failed to create new cabinet");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateCabinet(Guid id, CabinetCreateModel cabinetDto)
         {
-            if (cabinetDto == null)
-            {
-                return BadRequest("Cabinet data must be provided.");
-            }
-
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             var cabinetToUpdate = await _unitOfWork.CabinetRepository.GetByIdAsync(id);
             if (cabinetToUpdate == null)
             {
-                return NotFound("Cabinet not found.");
+                return NotFound(new { message = "Không tìm thấy tủ sách!" });
             }
 
             cabinetToUpdate.Name = cabinetDto.Name;
@@ -85,10 +72,10 @@ namespace LibraryManagerApp.API.Controllers
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
             {
-                return Ok("Cabinet updated successfully");
+                return Ok(new { message = "Cập nhật tủ thành công!" });
             }
 
-            return BadRequest("Failed to update cabinet");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
 
         [HttpDelete("{id}")]
@@ -97,7 +84,7 @@ namespace LibraryManagerApp.API.Controllers
             var cabinetToDelete = await _unitOfWork.CabinetRepository.GetByIdAsync(id);
             if (cabinetToDelete == null)
             {
-                return NotFound("Cabinet not found.");
+                return NotFound(new { message = "Không tìm thấy tủ sách!" });
             }
 
             _unitOfWork.CabinetRepository.Delete(cabinetToDelete);
@@ -105,10 +92,30 @@ namespace LibraryManagerApp.API.Controllers
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
             {
-                return Ok("Cabinet deleted successfully");
+                return Ok(new { message = "Xóa tủ sách thành công!" });
             }
 
-            return BadRequest("Failed to delete cabinet");
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCabinets([FromBody] List<Guid> ids)
+        {
+            foreach (Guid id in ids)
+            {
+                var existingCabinet = await _unitOfWork.CabinetRepository.GetByIdAsync(id);
+                if (existingCabinet == null)
+                {
+                    return NotFound(new { message = $"Không tìm thấy tủ sách có ID: {id}" });
+                }
+                _unitOfWork.CabinetRepository.Delete(existingCabinet);
+            }
+            var saved = await _unitOfWork.SaveChangesAsync();
+            if (saved > 0)
+            {
+                return Ok(new { message = "Hoàn tất xóa tủ sách!" });
+            }
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
     }
 }

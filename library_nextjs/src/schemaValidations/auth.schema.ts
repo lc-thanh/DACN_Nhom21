@@ -1,3 +1,4 @@
+import { phoneFormatTest } from "@/lib/utils";
 import z from "zod";
 
 export const RegisterBody = z
@@ -18,14 +19,10 @@ export const RegisterBody = z
       .string()
       .min(1, { message: "Số điện thoại không được để trống!" })
       .max(11, { message: "Số điện thoại không đúng định dạng!" }),
-    email: z
-      .string()
-      .email({ message: "Email không đúng!" })
-      .optional()
-      .or(z.literal("")),
-    // role: z.enum(["student", "teacher"], {
-    //   required_error: "Chọn 1 trong 2 vai trò",
-    // }),
+    email: z.preprocess((value) => {
+      if (value === "") return undefined;
+      return value;
+    }, z.string().email({ message: "Email không đúng!" }).optional()),
     password: z
       .string()
       .min(8, { message: "Mật khẩu phải có ít nhất 8 ký tự!" })
@@ -74,8 +71,7 @@ export const RegisterBody = z
       });
     }
 
-    const phonePattern: RegExp = /^(03|05|07|08|09|01[2|6|8|9])([0-9]{8})$/;
-    if (!phonePattern.test(phone)) {
+    if (!phoneFormatTest(phone)) {
       ctx.addIssue({
         code: "custom",
         message: "Số điện thoại không đúng định dạng",
@@ -89,7 +85,7 @@ export const RegisterRes = z.object({
   data: z.object({
     accessToken: z.string(),
     refreshToken: z.string(),
-    expiration: z.string(),
+    expiresAt: z.string(),
   }),
   message: z.string(),
 });
@@ -108,8 +104,7 @@ export const LoginBody = z
   })
   .strict()
   .superRefine(({ phone }, ctx) => {
-    const phonePattern: RegExp = /^(03|05|07|08|09|01[2|6|8|9])([0-9]{8})$/;
-    if (!phonePattern.test(phone)) {
+    if (!phoneFormatTest(phone)) {
       ctx.addIssue({
         code: "custom",
         message: "Số điện thoại không đúng định dạng",

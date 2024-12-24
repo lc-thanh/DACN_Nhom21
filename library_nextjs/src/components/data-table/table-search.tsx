@@ -22,7 +22,6 @@ export default function TableSearch({ placeholder }: { placeholder: string }) {
       params.delete("searchString");
     }
     replace(`${pathname}?${params.toString()}`);
-    console.log("searching...");
   }, 500);
 
   const handleClearSearch = () => {

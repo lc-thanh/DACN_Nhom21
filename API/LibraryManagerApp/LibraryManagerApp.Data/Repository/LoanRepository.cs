@@ -59,7 +59,7 @@ namespace LibraryManagerApp.Data.Repository
             return loanQuery;
         }
 
-        public async Task<Loan> GetLoanByIdAsync(Guid loanId)
+        public async Task<Loan?> GetLoanByIdAsync(Guid loanId)
         {
             return await _context.Loans
             .Include(l => l.LoanDetails)

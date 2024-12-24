@@ -2,7 +2,21 @@ import authApiRequests from "@/apiRequests/auth";
 import { HttpError } from "@/lib/http";
 import { cookies } from "next/headers";
 
-export async function POST(_request: Request) {
+export async function POST(request: Request) {
+  // Xóa cookie
+  const headers = new Headers();
+  headers.append("Set-Cookie", `accessToken=; Path=/; HttpOnly; Max-Age=0`);
+  headers.append("Set-Cookie", `refreshToken=; Path=/; HttpOnly; Max-Age=0`);
+
+  const requestBody = await request.json();
+  const force = requestBody.force as boolean | undefined;
+  if (force) {
+    return Response.json(
+      { message: "Buộc đăng xuất thành công!" },
+      { status: 200, headers: headers }
+    );
+  }
+
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value ?? "";
   const refreshToken = cookieStore.get("refreshToken")?.value ?? "";
@@ -19,10 +33,6 @@ export async function POST(_request: Request) {
       accessToken,
       refreshToken,
     });
-
-    const headers = new Headers();
-    headers.append("Set-Cookie", `accessToken=; Path=/; HttpOnly; Max-Age=0`);
-    headers.append("Set-Cookie", `refreshToken=; Path=/; HttpOnly; Max-Age=0`);
 
     return Response.json(result.payload, {
       status: 200,

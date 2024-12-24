@@ -27,5 +27,20 @@ namespace LibraryManagerApp.Data.Repository
 
             return list;
         }
+
+        public async Task<CategoryViewModal?> GetCategoryWithBookCount(Guid id)
+        {
+            var query = _context.Categories.Include(c => c.Books);
+            CategoryViewModal? category = await query.Select(c => new CategoryViewModal
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Description = c.Description,
+                CreatedOn = c.CreatedOn,
+                BooksCount = c.Books.Count
+            }).FirstOrDefaultAsync(c => c.Id.Equals(id));
+
+            return category;
+        }
     }
 }

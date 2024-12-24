@@ -5,6 +5,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import AppProvider from "@/app/AppProvider";
 import { cookies } from "next/headers";
+import { decodeJWT } from "@/lib/utils";
+import TokenRefresher from "@/components/token-refresher";
 
 export const metadata: Metadata = {
   title: "Quản lý thư viện",
@@ -24,6 +26,10 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken");
   const refreshToken = cookieStore.get("refreshToken");
+  const jwtPayload = accessToken ? decodeJWT(accessToken.value) : null;
+  const expiresAt = jwtPayload
+    ? new Date(jwtPayload.exp * 1000).toUTCString()
+    : "";
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -38,9 +44,11 @@ export default async function RootLayout({
             initTokens={{
               accessToken: accessToken?.value,
               refreshToken: refreshToken?.value,
+              expiresAt,
             }}
           >
             {children}
+            <TokenRefresher />
           </AppProvider>
           <Toaster richColors />
         </ThemeProvider>

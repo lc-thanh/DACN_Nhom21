@@ -2,11 +2,13 @@
 using LibraryManagerApp.Data;
 using LibraryManagerApp.Data.Data;
 using LibraryManagerApp.Data.Interfaces;
+using LibraryManagerApp.Data.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace LibraryManagerApp.API
@@ -22,6 +24,8 @@ namespace LibraryManagerApp.API
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
+
+            builder.Services.AddHostedService<LoanStatusUpdaterService>();
 
             builder.Services.AddControllers().AddJsonOptions(x =>
             {
@@ -55,6 +59,34 @@ namespace LibraryManagerApp.API
                         //RoleClaimType = "role",
                         ClockSkew = TimeSpan.Zero,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    };
+
+                    // Xử lý phản hồi lỗi trả về khi xác thực thất bại
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnChallenge = context =>
+                        {
+                            // Tùy chỉnh thông báo lỗi trả về
+                            context.HandleResponse(); // Ngăn không cho ASP.NET tự động trả về lỗi mặc định
+                            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                            context.Response.ContentType = "application/json";
+                            var result = JsonSerializer.Serialize(new
+                            {
+                                message = "Bạn không được phép truy cập. Token không hợp lệ hoặc đã hết hạn."
+                            });
+                            return context.Response.WriteAsync(result);
+                        },
+                        OnForbidden = context =>
+                        {
+                            // Tùy chỉnh phản hồi khi người dùng không có quyền
+                            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                            context.Response.ContentType = "application/json";
+                            var result = JsonSerializer.Serialize(new
+                            {
+                                message = "Bạn không có quyền truy cập vào tài nguyên này."
+                            });
+                            return context.Response.WriteAsync(result);
+                        }
                     };
                 });
 
@@ -106,6 +138,8 @@ namespace LibraryManagerApp.API
                 });
             }
 
+            app.UseCors("AllowAll");
+
             app.UseHttpsRedirection();
 
             app.UseAuthentication(); // Thêm middleware Authentication
@@ -115,8 +149,6 @@ namespace LibraryManagerApp.API
             app.UseStaticFiles();
 
             //app.MapHub<NotificationHub>("/notificationHub");
-
-            app.UseCors("AllowAll");
 
             app.MapControllers();
 

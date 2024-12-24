@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using LibraryManagerApp.Data.Enum;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibraryManagerApp.Data.Models
 {
@@ -8,6 +9,9 @@ namespace LibraryManagerApp.Data.Models
         [MinLength(10)]
         [MaxLength(10)]
         public string IndividualId { get; set; }
+
+        [Required]
+        public MemberStatus Status { get; set; } = MemberStatus.Normal; 
 
         public int GetMembershipDays()
         {

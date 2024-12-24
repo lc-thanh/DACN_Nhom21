@@ -14,7 +14,7 @@ export default async function Layout({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar />
-      <main className="px-2 pb-2 w-full">
+      <main className="pe-2 ps-2 md:ps-0 pb-2 w-full">
         <AppHeader />
         {children}
       </main>

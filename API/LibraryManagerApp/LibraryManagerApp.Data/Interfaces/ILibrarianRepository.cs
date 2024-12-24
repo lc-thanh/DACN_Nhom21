@@ -5,5 +5,6 @@ namespace LibraryManagerApp.Data.Interfaces
     public interface ILibrarianRepository : IBaseRepository<Librarian>
     {
         Task<Librarian?> GetByPhoneAsync(string phone);
+        IQueryable<Librarian> GetQueryFullInfors();
     }
 }

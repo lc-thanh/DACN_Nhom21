@@ -93,3 +93,11 @@ export const CreateBookBody = z
   })
   .strict();
 export type CreateBookBodyType = z.TypeOf<typeof CreateBookBody>;
+
+export const LoanBook = z
+  .object({
+    book: Book,
+    quantity: z.number(),
+  })
+  .strict();
+export type LoanBookType = z.TypeOf<typeof LoanBook>;

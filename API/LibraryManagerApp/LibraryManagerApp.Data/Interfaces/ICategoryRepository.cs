@@ -7,5 +7,6 @@ namespace LibraryManagerApp.Data.Interfaces
     public interface ICategoryRepository : IBaseRepository<Category>
     {
         Task<IList<CategoryViewModal>> GetAllCategoriesWithBookCount();
+        Task<CategoryViewModal?> GetCategoryWithBookCount(Guid id);
     }
 }

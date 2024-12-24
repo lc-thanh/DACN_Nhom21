@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -55,6 +56,11 @@ namespace LibraryManagerApp.API.Controllers
             if (!_userService.VerifyPassword(user.Password, login.Password))
             {
                 return StatusCode(422, new { message = "Mật khẩu không chính xác!", field = "password" });
+            }
+
+            if (user.isLocked)
+            {
+                return StatusCode(423, new { message = "Tài khoản đã bị khóa, vui lòng liên hệ thư viện để biết thêm thông tin..." });
             }
 
             JwtSecurityToken token;
@@ -115,17 +121,19 @@ namespace LibraryManagerApp.API.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new { 
-                    message = "Dữ liệu đầu vào chưa đúng!", 
-                    ModelState 
+                return BadRequest(new
+                {
+                    message = "Dữ liệu đầu vào chưa đúng!",
+                    ModelState
                 });
             }
 
             if (!signUp.Password.Equals(signUp.ConfirmPassword))
             {
-                return BadRequest(new { 
-                    message = "Xác nhận mật khẩu chưa đúng!", 
-                    field = "confirmPassword" 
+                return BadRequest(new
+                {
+                    message = "Xác nhận mật khẩu chưa đúng!",
+                    field = "confirmPassword"
                 });
             }
 
@@ -259,12 +267,12 @@ namespace LibraryManagerApp.API.Controllers
 
                         return Ok(new
                         {
-                            FullName = member.FullName,
-                            Phone = member.Phone,
-                            IndividualId = member.IndividualId,
-                            Email = member.Email,
-                            Address = member.Address,
-                            DateOfBirth = member.DateOfBirth,
+                            member.FullName,
+                            member.Phone,
+                            member.IndividualId,
+                            member.Email,
+                            member.Address,
+                            member.DateOfBirth,
                         });
                     }
 
@@ -370,8 +378,13 @@ namespace LibraryManagerApp.API.Controllers
 
             return new ObjectResult(new
             {
-                accessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
-                refreshToken = newRefreshToken
+                data = new
+                {
+                    AccessToken = new JwtSecurityTokenHandler().WriteToken(newAccessToken),
+                    RefreshToken = newRefreshToken,
+                    ExpiresAt = newAccessToken.ValidTo
+                },
+                message = "Làm mới token thành công!"
             });
         }
 

@@ -2,7 +2,6 @@
 
 import categoryApiRequests from "@/apiRequests/category";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
@@ -12,14 +11,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { handleApiError } from "@/lib/utils";
+import { formatDate, handleApiError } from "@/lib/utils";
 import { CategoryType } from "@/schemaValidations/category.schema";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { FilePenLine, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import CreateCategoryButton from "@/app/dashboard/category/_component/create-category-button";
+import DeleteCategoryButton from "@/app/dashboard/category/_component/delete-category-button";
+import DeleteCategoriesButton from "@/app/dashboard/category/_component/deleteArray-button";
+import UpdateCategoryButton from "@/app/dashboard/category/_component/update-category-button";
 
 export default function CategoryTable() {
   const [loading, setLoading] = useState(false);
@@ -32,7 +31,7 @@ export default function CategoryTable() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-
+      setAllChecked(false);
       const { payload } = await categoryApiRequests.getCategories();
       setCategories(payload);
     } catch (error) {
@@ -77,11 +76,6 @@ export default function CategoryTable() {
     else setAllChecked("indeterminate");
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "HH:mm - dd/MM/yyyy");
-  };
-
   const handleRefreshCallback = () => {
     fetchCategories();
   };
@@ -90,11 +84,12 @@ export default function CategoryTable() {
     <>
       <div className="flex mb-4 sm:flex-row flex-col justify-between">
         <div></div>
-        <div className="flex flex-row space-x-2">
-          {/* <DeleteArrayButton
+        <div className="flex flex-row">
+          <DeleteCategoriesButton
             checkedItems={checkedItems}
-            callback={handleDeleteCallback}
-          /> */}
+            callback={handleRefreshCallback}
+          />
+
           <CreateCategoryButton callback={handleRefreshCallback} />
         </div>
       </div>
@@ -148,15 +143,15 @@ export default function CategoryTable() {
                 <TableCell>{formatDate(category.createdOn)}</TableCell>
                 <TableCell>
                   <div className="flex flex-row h-full justify-center">
-                    <Link href={`/dashboard/category/edit/${category.id}`}>
-                      <Button variant="ghost" size="icon">
-                        <FilePenLine size={20} className="text-blue-500" />
-                      </Button>
-                    </Link>
+                    <UpdateCategoryButton
+                      id={category.id}
+                      callback={handleRefreshCallback}
+                    />
 
-                    <Button variant="ghost" size="icon">
-                      <Trash2 size={20} className="text-red-500" />
-                    </Button>
+                    <DeleteCategoryButton
+                      id={category.id}
+                      callback={handleRefreshCallback}
+                    />
                   </div>
                 </TableCell>
               </TableRow>

@@ -11,16 +11,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import {
-  Calendar,
   LayoutDashboard,
   Book,
   SquareLibrary,
   Tag,
   Inbox,
-  Search,
-  Settings,
   LayoutList,
 } from "lucide-react";
+import { cookies } from "next/headers";
 import Link from "next/link";
 
 // Menu items.
@@ -29,26 +27,6 @@ const homeItems = [
     title: "Tổng quát",
     url: "/dashboard",
     icon: LayoutDashboard,
-  },
-  {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
   },
 ];
 const bookManagementItems = [
@@ -59,7 +37,7 @@ const bookManagementItems = [
   },
   {
     title: "Quản lý tủ/ngăn sách",
-    url: "#",
+    url: "/dashboard/cabinets_bookshelves",
     icon: SquareLibrary,
   },
   {
@@ -71,24 +49,27 @@ const bookManagementItems = [
 const loanManagementItems = [
   {
     title: "Quản lý phiếu mượn",
-    url: "#",
+    url: "/dashboard/loan",
     icon: Tag,
   },
 ];
 const humanResourceItems = [
   {
-    title: "Quản lý nhân viên",
-    url: "#",
+    title: "Quản lý nhân sự ",
+    url: "/dashboard/staff",
     icon: LayoutDashboard,
   },
   {
-    title: "Quản lý người dùng",
-    url: "#",
+    title: "Quản lý thành viên",
+    url: "/dashboard/member",
     icon: Inbox,
   },
 ];
 
-export function AppSidebar() {
+export async function AppSidebar() {
+  // const cookieStore = await cookies();
+  // const accessToken = cookieStore.get("accessToken");
+
   return (
     <Sidebar variant="floating" collapsible="icon">
       <SidebarHeader />

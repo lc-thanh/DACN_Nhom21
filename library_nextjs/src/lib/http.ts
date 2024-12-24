@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import envConfig from "@/config";
 import { LoginResType } from "@/schemaValidations/auth.schema";
+import { redirect } from "next/navigation";
 
 type CustomOptions = Omit<RequestInit, "method"> & {
   baseUrl?: string | undefined;
 };
 
 const ENTITY_ERROR_STATUS = 422;
+const AUTHENTICATION_ERROR_STATUS = 401;
 
 type EntityErrorPayload = {
   field: string;
@@ -65,9 +67,21 @@ class ClientTokens {
     }
     this._refreshToken = token;
   }
-}
 
+  private _expiresAt = new Date().toUTCString();
+  get expiresAt() {
+    return this._expiresAt;
+  }
+  set expiresAt(date: string) {
+    if (typeof window === "undefined") {
+      throw new Error("Cannot set token on server side");
+    }
+    this._expiresAt = date;
+  }
+}
 export const clientTokens = new ClientTokens();
+
+let clientLogoutRequest: any | Promise<any> = null;
 
 const request = async <Response>(
   method: "GET" | "POST" | "PUT" | "DELETE",
@@ -106,6 +120,7 @@ const request = async <Response>(
     },
     body,
   });
+
   const payload: Response = await res.json();
   const data = {
     status: res.status,
@@ -120,26 +135,51 @@ const request = async <Response>(
           payload: EntityErrorPayload;
         }
       );
+    } else if (res.status === AUTHENTICATION_ERROR_STATUS) {
+      // Force logout ở client
+      if (typeof window !== "undefined") {
+        if (!clientLogoutRequest) {
+          clientLogoutRequest = request("POST", "/api/auth/logout", {
+            body: { force: true } as unknown as BodyInit,
+            baseUrl: "",
+          });
+          await clientLogoutRequest;
+
+          // Khi sử dụng location.href, tức là website đã hard reload,
+          // Nên không cần phải set lại clientLogoutRequest = null
+          // và clientTokens.accessToken = ""; clientTokens.refreshToken = ""
+          location.href = "/login";
+        }
+      } else {
+        // Force logout ở server
+        const accessToken = (options?.headers as any)?.Authorization?.split(
+          " "
+        )[1];
+        redirect(`/force-logout?accessToken=${accessToken}`);
+      }
     } else {
       throw new HttpError(data);
     }
   }
 
   if (/^(\/?Auths\/login)$/.test(url) || /^(\/?Auths\/signup)$/.test(url)) {
-    // set token phía client
+    // Việc set token ở đây chỉ dành cho client (client gọi lên server),
+    // vì cookies là phải set cho client (Next server set cho Next client)
     if (typeof window !== "undefined") {
+      // set token phía client (dùng Context Api để lưu trữ)
       clientTokens.accessToken = (payload as LoginResType).data.accessToken;
       clientTokens.refreshToken = (payload as LoginResType).data.refreshToken;
-    }
+      clientTokens.expiresAt = (payload as LoginResType).data.expiresAt;
 
-    // set token phía server
-    await request("POST", "/api/auth", {
-      baseUrl: "",
-      body: {
-        accessToken: (payload as LoginResType).data.accessToken,
-        refreshToken: (payload as LoginResType).data.refreshToken,
-      } as unknown as BodyInit,
-    });
+      // set token phía server (gửi lên server để set cookies)
+      await request("POST", "/api/auth", {
+        baseUrl: "",
+        body: {
+          accessToken: (payload as LoginResType).data.accessToken,
+          refreshToken: (payload as LoginResType).data.refreshToken,
+        } as unknown as BodyInit,
+      });
+    }
   } else if (/^(\/?Auths\/logout)$/.test(url)) {
     if (typeof window !== "undefined") {
       clientTokens.accessToken = "";

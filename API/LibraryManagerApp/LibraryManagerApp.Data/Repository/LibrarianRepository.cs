@@ -17,5 +17,12 @@ namespace LibraryManagerApp.Data.Repository
 
             return librarian;
         }
+
+        public IQueryable<Librarian> GetQueryFullInfors()
+        {
+            var librarians = _context.Librarians.Include(m => m.Loans);
+
+            return librarians;
+        }
     }
 }

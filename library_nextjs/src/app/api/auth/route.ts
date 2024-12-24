@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   }
 
   const headers = new Headers();
-  headers.append("Set-Cookie", `accessToken=${accessToken}; Path=/; HttpOnly`);
+  headers.append("Set-Cookie", `accessToken=${accessToken}; Path=/; HttpOnly;`);
   headers.append(
     "Set-Cookie",
     `refreshToken=${refreshToken}; Path=/; HttpOnly`

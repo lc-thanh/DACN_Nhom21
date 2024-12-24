@@ -10,6 +10,24 @@ const accountApiRequests = {
   meClient: () => {
     return http.get<AccountResType>("/Auths/me");
   },
+  resetPassword: async (id: string) => {
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    await delay(1000);
+    return http.post(`/Users/${id}/reset-password`, null);
+  },
+  lock: async (id: string) => {
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    await delay(1000);
+    return http.post(`/Users/${id}/lock`, null);
+  },
+  unlock: async (id: string) => {
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    await delay(1000);
+    return http.post(`/Users/${id}/unlock`, null);
+  },
 };
 
 export default accountApiRequests;

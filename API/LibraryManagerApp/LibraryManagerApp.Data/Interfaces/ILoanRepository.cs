@@ -8,6 +8,6 @@ namespace LibraryManagerApp.Data.Interfaces
         string GenerateLoanCode();
         Task CreateLoanAsync(Loan loan);
         IQueryable<Loan> GetAllInforsQuery();
-        Task<Loan> GetLoanByIdAsync(Guid loanId);
+        Task<Loan?> GetLoanByIdAsync(Guid loanId);
     }
 }

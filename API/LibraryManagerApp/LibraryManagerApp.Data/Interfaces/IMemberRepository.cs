@@ -6,5 +6,8 @@ namespace LibraryManagerApp.Data.Interfaces
     {
         Task<Member?> GetByPhoneAsync(string phone);
         Task<Member?> GetByIndividualIdAsync(string individualId);
+        IQueryable<Member> GetQueryFullInfors();
+        Task<Member?> GetFullInforsByIdAsync(Guid id);
+        Task<int?> OnLoansCount(Guid id);
     }
 }

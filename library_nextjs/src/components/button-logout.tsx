@@ -2,7 +2,6 @@
 
 import authApiRequests from "@/apiRequests/auth";
 import { Button } from "@/components/ui/button";
-import { handleApiError } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -14,8 +13,10 @@ export default function ButtonLogout() {
       await authApiRequests.logoutFromNextClientToNextServer();
       toast.success("Đăng xuất thành công!");
       router.push("/login");
-    } catch (error) {
-      handleApiError({ error });
+    } catch (_error) {
+      authApiRequests.logoutFromNextClientToNextServer(true).then((_res) => {
+        router.push("/login?redirectFrom=/force-logout");
+      });
     }
   };
 

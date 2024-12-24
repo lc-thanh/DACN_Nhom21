@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { handleApiError } from "@/lib/utils";
+import { formatDate, handleApiError } from "@/lib/utils";
 import {
   BookPaginatedResType,
   BookType,
@@ -22,7 +22,6 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { FilePenLine, Plus } from "lucide-react";
 import Link from "next/link";
-import { format } from "date-fns";
 import Pagination from "@/components/data-table/my-pagination";
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import { TableFacetedFilter } from "@/components/data-table/data-table-faceted-filter";
@@ -63,7 +62,6 @@ export function BookTable() {
         }
         setBooksPaginated(paginatedBooks);
         setCategories(categories);
-        console.log(">>> categories", categories);
       } catch (error) {
         handleApiError({
           error,
@@ -106,11 +104,6 @@ export function BookTable() {
     if (checkedCount === 0) setAllChecked(false);
     else if (checkedCount === bookPaginated?.items.length) setAllChecked(true);
     else setAllChecked("indeterminate");
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "HH:mm - dd/MM/yyyy");
   };
 
   function handleDeleteCallback(): void {

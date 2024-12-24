@@ -25,21 +25,23 @@ export default function CreateCategoryButton({
           Thêm danh mục
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="mx-auto w-full max-w-xl">
-        <DrawerHeader>
-          <DrawerTitle>Tạo danh mục mới</DrawerTitle>
-          <DrawerDescription>
-            Điền biểu mẫu sau để tạo danh mục mới
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="p-4 pb-0">
-          <CreateCategoryForm callback={callback} />
+      <DrawerContent className="mx-auto w-full max-w-xl max-h-[100vh]">
+        <div className="overflow-y-auto h-full">
+          <DrawerHeader>
+            <DrawerTitle>Tạo danh mục mới</DrawerTitle>
+            <DrawerDescription>
+              Điền biểu mẫu sau để tạo danh mục mới
+            </DrawerDescription>
+          </DrawerHeader>
+          <div className="p-4 pb-0">
+            <CreateCategoryForm callback={callback} />
+          </div>
+          <DrawerFooter>
+            <DrawerClose asChild>
+              <Button variant="outline">Hủy</Button>
+            </DrawerClose>
+          </DrawerFooter>
         </div>
-        <DrawerFooter>
-          <DrawerClose asChild>
-            <Button variant="outline">Hủy</Button>
-          </DrawerClose>
-        </DrawerFooter>
       </DrawerContent>
     </Drawer>
   );

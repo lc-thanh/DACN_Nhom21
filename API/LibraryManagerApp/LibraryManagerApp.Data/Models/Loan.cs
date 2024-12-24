@@ -8,9 +8,11 @@ namespace LibraryManagerApp.Data.Models
     {
         public Guid Id { get; set; }
 
+        [Required]
         public string LoanCode { get; set; }
 
-        public DateTime LoanDate { get; set; } = DateTime.Now;
+        [Required]
+        public DateTime LoanDate { get; set; }
 
         [Required]
         public DateTime DueDate { get; set; }
