@@ -15,14 +15,16 @@ namespace LibraryManagerApp.Data.Dto
 
         public DateTime? ReturnedDate { get; set; } // OrderBy
 
+        public int Deposit { get; set; }
+
         public StatusEnum Status { get; set; } // FacetedFilter
 
         public Guid MemberId { get; set; }
         public string MemberPhone { get; set; } // Search
         public string MemberFullName { get; set; } // Search
 
-        public Guid LibrarianId { get; set; }
-        public string LibrarianFullName { get; set; } // Search
+        public Guid? LibrarianId { get; set; }
+        public string? LibrarianFullName { get; set; } // Search
 
         public IList<string> BookNames { get; set; }
 

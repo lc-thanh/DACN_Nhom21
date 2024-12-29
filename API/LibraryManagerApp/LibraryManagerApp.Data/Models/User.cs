@@ -37,6 +37,8 @@ namespace LibraryManagerApp.Data.Models
 
         public IList<UserAction> UserActions { get; set; }
 
+        public IList<DepositTransaction> DepositTransactions { get; set; }
+
         public IList<UserToken> UserTokens { get; set; }
 
         public bool isLocked { get; set; } = false;

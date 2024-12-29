@@ -88,5 +88,25 @@ namespace LibraryManagerApp.API.Controllers
 
             return Ok(statistics);
         }
+
+        [HttpGet("user-actions")]
+        public async Task<IActionResult> GetUserActions()
+        {
+            var userActions = await _unitOfWork.Context.UserActions
+                .OrderByDescending(ua => ua.Timestamp)
+                .Take(10)
+                .Include(ua => ua.User)
+                .Select(ua => new UserActionsViewModel()
+                {
+                    Id = ua.Id,
+                    UserId = ua.UserId,
+                    FullName = ua.User.FullName,
+                    ActionName = ua.ActionName,
+                    Timestamp = ua.Timestamp,
+                })
+                .ToListAsync();
+
+            return Ok(userActions);
+        }
     }
 }

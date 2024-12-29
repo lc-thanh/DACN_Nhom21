@@ -27,6 +27,13 @@ export const decodeJWT = (token: string) => {
   };
 };
 
+export const redirectToHomePageByRole = (role: string) => {
+  if (role === "Member") {
+    return "/member";
+  }
+  return "/dashboard";
+};
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }

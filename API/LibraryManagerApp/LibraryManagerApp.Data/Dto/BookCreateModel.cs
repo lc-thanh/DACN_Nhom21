@@ -22,6 +22,10 @@ namespace LibraryManagerApp.Data.Dto
         [Range(0, 9999)]
         public int TotalPages {  get; set; }
 
+        [Required]
+        [Range(0, 99999999)]
+        public int Price { get; set; }
+
         [MaxLength(2000)]
         public string? Description { get; set; }
 

@@ -10,3 +10,12 @@ export const LoanCountByStatus = z
   })
   .strict();
 export type LoanCountByStatusType = z.TypeOf<typeof LoanCountByStatus>;
+
+export const UserAction = z.object({
+  id: z.string().uuid(),
+  userId: z.string().uuid(),
+  fullName: z.string(),
+  actionName: z.string(),
+  timestamp: z.string(),
+});
+export type UserActionType = z.TypeOf<typeof UserAction>;

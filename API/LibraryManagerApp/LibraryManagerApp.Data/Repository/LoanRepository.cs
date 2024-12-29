@@ -59,6 +59,16 @@ namespace LibraryManagerApp.Data.Repository
             return loanQuery;
         }
 
+        public IQueryable<Loan> GetAllInforsQueryByMemberPhone(string phone)
+        {
+            var loanQuery = _context.Loans
+                .Include(l => l.Librarian)
+                .Include(l => l.Member)
+                .Include(l => l.LoanDetails).Where(l => l.Member.Phone.Equals(phone));
+
+            return loanQuery;
+        }
+
         public async Task<Loan?> GetLoanByIdAsync(Guid loanId)
         {
             return await _context.Loans

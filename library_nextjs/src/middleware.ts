@@ -1,10 +1,12 @@
 import authApiRequests from "@/apiRequests/auth";
-import { decodeJWT } from "@/lib/utils";
+import { decodeJWT, redirectToHomePageByRole } from "@/lib/utils";
 import { differenceInMinutes } from "date-fns";
 import { NextResponse } from "next/server";
 import { NextRequest } from "next/server";
 
-const privatePaths = ["/dashboard", "/me"];
+const staffPaths = ["/dashboard"];
+const memberPaths = ["/member"];
+const privatePaths = [...staffPaths, ...memberPaths, "/me"];
 const authPaths = ["/login", "/signup"];
 
 // This function can be marked `async` if using `await` inside
@@ -16,20 +18,26 @@ export async function middleware(request: NextRequest) {
 
   if (accessToken && refreshToken && jwtPayload) {
     let response = NextResponse.next();
+    const role = jwtPayload.role;
 
     // Nếu truy cập vào trang login hoặc signup thì chuyển hướng về dashboard
     if (authPaths.some((path) => pathname.startsWith(path))) {
-      response = NextResponse.redirect(new URL("/dashboard", request.url));
+      response = NextResponse.redirect(
+        new URL(redirectToHomePageByRole(role), request.url)
+      );
     }
 
-    if (
-      jwtPayload.role !== "Admin" &&
-      pathname.startsWith("/dashboard/staff")
-    ) {
-      if (jwtPayload.role === "Librarian") {
+    if (role === "Member") {
+      if (pathname.startsWith("/dashboard")) {
+        response = NextResponse.redirect(new URL("/member", request.url));
+      }
+    }
+
+    if (role !== "Admin" && pathname.startsWith("/dashboard/staff")) {
+      if (role === "Librarian") {
         response = NextResponse.redirect(new URL("/dashboard", request.url));
       } else {
-        response = NextResponse.redirect(new URL("/me", request.url));
+        response = NextResponse.redirect(new URL("/member", request.url));
       }
     }
 
@@ -37,7 +45,7 @@ export async function middleware(request: NextRequest) {
     // Và set lại cookies nếu thành công
     const now = new Date();
     const expiresAt = new Date(jwtPayload.exp * 1000).toUTCString();
-    if (differenceInMinutes(new Date(expiresAt), now) < 1) {
+    if (differenceInMinutes(new Date(expiresAt), now) < 2) {
       try {
         const { payload } =
           await authApiRequests.refreshTokenFromNextServerToServer({
@@ -107,6 +115,7 @@ export const config = {
   // Không được để matcher: [...privatePaths, ...authPaths] vì Nextjs sẽ không tính toán
   matcher: [
     "/dashboard/:path*",
+    "/member/:path*",
     "/me/:path*",
     "/login/:path*",
     "/signup/:path*",

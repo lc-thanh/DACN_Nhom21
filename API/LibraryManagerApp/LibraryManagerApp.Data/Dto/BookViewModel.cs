@@ -18,6 +18,8 @@ namespace LibraryManagerApp.Data.Dto
 
         public int TotalPages { get; set; } = 1;
 
+        public int Price { get; set; }
+
         public string ImageUrl { get; set; }
 
         public string? Description { get; set; }

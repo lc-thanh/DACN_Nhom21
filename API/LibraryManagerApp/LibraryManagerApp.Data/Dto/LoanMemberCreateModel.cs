@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace LibraryManagerApp.Data.Dto
 {
-    public class LoanPendingModel
+    public class LoanMemberCreateModel
     {
         [Required]
-        public List<Guid> BookIds { get; set; }
+        public List<string> BookIdAndQuantity { get; set; }
 
         [Required]
         public DateTime LoanDate { get; set; }

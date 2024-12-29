@@ -27,10 +27,10 @@ export default function TokenRefresher() {
     const interval = setInterval(async () => {
       const now = new Date();
       const expiresAt = new Date(clientTokens.expiresAt);
-      if (differenceInMinutes(expiresAt, now) < 1) {
+      if (differenceInMinutes(expiresAt, now) < 3) {
         await refreshTokenFunc();
       }
-    }, 1000 * 30);
+    }, 1000 * 60);
     return () => clearInterval(interval);
   }, [refreshTokenFunc]);
 

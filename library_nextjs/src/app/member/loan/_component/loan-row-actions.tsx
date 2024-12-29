@@ -16,22 +16,25 @@ import {
   UndoDot,
 } from "lucide-react";
 
-export default function LoanRowActions({
+export default function MemberLoanRowActions({
   id,
   status,
   setActionId,
   setOpenApproveDialog,
   setOpenOnLoanDialog,
-  setOpenDeleteDialog,
+  setOpenResetPasswordDialog,
   setOpenReturnDialog,
+  setOpenUnlockDialog,
 }: {
   id: string;
   status: string;
+  callback: () => void;
   setActionId: (id: string) => void;
   setOpenApproveDialog: (open: boolean) => void;
   setOpenOnLoanDialog: (open: boolean) => void;
-  setOpenDeleteDialog: (open: boolean) => void;
+  setOpenResetPasswordDialog: (open: boolean) => void;
   setOpenReturnDialog: (open: boolean) => void;
+  setOpenUnlockDialog: (open: boolean) => void;
 }) {
   return (
     <DropdownMenu>
@@ -85,7 +88,7 @@ export default function LoanRowActions({
           <DropdownMenuItem
             onClick={() => {
               setActionId(id);
-              setOpenDeleteDialog(true);
+              setOpenResetPasswordDialog(true);
             }}
             className="text-red-500"
             disabled={status !== "Returned"}

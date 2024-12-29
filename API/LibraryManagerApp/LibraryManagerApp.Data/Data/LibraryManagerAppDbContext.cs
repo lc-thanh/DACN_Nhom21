@@ -24,6 +24,7 @@ namespace LibraryManagerApp.Data.Data
         public DbSet<Loan> Loans { get; set; }
         public DbSet<LoanDetail> LoanDetails { get; set; }
         public DbSet<UserAction> UserActions { get; set; }
+        public DbSet<DepositTransaction> DepositTransactions { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -69,6 +70,7 @@ namespace LibraryManagerApp.Data.Data
                 .HasOne<Librarian>(l => l.Librarian)
                 .WithMany(l => l.Loans)
                 .HasForeignKey(l => l.LibrarianId)
+                .IsRequired(false)
                 .OnDelete(DeleteBehavior.ClientCascade);
 
             modelBuilder.Entity<LoanDetail>().HasKey(ld => new { ld.LoanId, ld.BookId });
@@ -87,6 +89,11 @@ namespace LibraryManagerApp.Data.Data
                 .HasOne<User>(ua => ua.User)
                 .WithMany(u => u.UserActions)
                 .HasForeignKey(ua => ua.UserId);
+
+            modelBuilder.Entity<DepositTransaction>()
+                .HasOne<User>(dt => dt.User)
+                .WithMany(u => u.DepositTransactions)
+                .HasForeignKey(dt => dt.UserId);
 
             modelBuilder.Entity<UserToken>()
                 .HasOne<User>(ut => ut.User)
@@ -171,6 +178,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 10,
                     AvailableQuantity = 10,
                     TotalPages = 144,
+                    Price = 25000,
                     ImageUrl = "duong_kack_menh.jpg",
                     Description = "Đường cách mệnh có giá trị thực tiễn lớn lao, tạo ra sự chuyển biến căn bản, nhanh chóng trong nhận thức và hành động cách mạng của cán bộ và đông đảo quần chúng, thể hiện rõ quan điểm tư tưởng của Nguyễn Ái Quốc trong thời kỳ chuẩn bị về chính trị, tư tưởng và tổ chức tiến tới việc thành lập Đảng Cộng sản Việt Nam, là một trong những văn kiện lý luận đầu tiên của Đảng ta, đặt cơ sở tư tưởng cho đường lối của cách mạng Việt Nam.",
                     CreatedOn = new DateTime(2023, 05, 17),
@@ -188,6 +196,7 @@ namespace LibraryManagerApp.Data.Data
                     AvailableQuantity = 5,
                     TotalPages = 20,
                     ImageUrl = "dao_duc_cm.png",
+                    Price = 15000,
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 17),
                     AuthorName = "Hồ Chí Minh",
@@ -204,6 +213,7 @@ namespace LibraryManagerApp.Data.Data
                     AvailableQuantity = 7,
                     TotalPages = 576,
                     ImageUrl = "vhnt_cung_la_mot_mt.png",
+                    Price = 95000,
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 18),
                     AuthorName = "Hồ Chí Minh",
@@ -219,6 +229,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 7,
                     AvailableQuantity = 7,
                     TotalPages = 400,
+                    Price = 80000,
                     ImageUrl = "tuoi_tho_du_doi.jpeg",
                     Description = "\"Tuổi Thơ Dữ Dội\" không phải chỉ là một câu chuyện cổ tích, mà là một câu chuyện có thật ở trần gian, ở đó, những con người tuổi nhỏ đã tham gia vào cuộc kháng chiến chống xâm lược bảo vệ Tổ quốc với một chuỗi những chiến công đầy ắp li kì và hấp dẫn.",
                     CreatedOn = new DateTime(2023, 05, 18),
@@ -235,6 +246,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 8,
                     AvailableQuantity = 7,
                     TotalPages = 404,
+                    Price = 56000,
                     ImageUrl = "tuoi-tho-du-doi-t1.webp",
                     Description = "“Tuổi Thơ Dữ Dội” là một câu chuyện hay, cảm động viết về tuổi thơ. Sách dày 404 trang mà người đọc không bao giờ muốn ngừng lại, bị lôi cuốn vì những nhân vật ngây thơ có, khôn ranh có, anh hùng có, vì những sự việc khi thì ly kỳ, khi thì hài hước, khi thì gây xúc động đến ứa nước mắt...",
                     CreatedOn = new DateTime(2023, 05, 17),
@@ -251,6 +263,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 3,
                     AvailableQuantity = 3,
                     TotalPages = 312,
+                    Price = 120000,
                     ImageUrl = "khoa_hoc_1.jpeg",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 17),
@@ -267,6 +280,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 11,
                     AvailableQuantity = 11,
                     TotalPages = 92,
+                    Price = 90000,
                     ImageUrl = "tieng_anh.jpeg",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 17),
@@ -283,6 +297,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 5,
                     AvailableQuantity = 5,
                     TotalPages = 120,
+                    Price = 85000,
                     ImageUrl = "chu_han.png",
                     Description = null,
                     CreatedOn = new DateTime(2023, 05, 19),
@@ -299,6 +314,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 15,
                     AvailableQuantity = 15,
                     TotalPages = 172,
+                    Price = 21000,
                     ImageUrl = "SGK_1.jpg",
                     Description = null,
                     CreatedOn = new DateTime(2023, 08, 20),
@@ -315,6 +331,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 3,
                     AvailableQuantity = 3,
                     TotalPages = 640,
+                    Price = 150000,
                     ImageUrl = "hacker.jpeg",
                     Description = "Hacker lược sử nói về những nhân vật, cỗ máy, sự kiện định hình cho văn hóa và đạo đức hacker từ những hacker đời đầu ở đại học MIT. Câu chuyện hấp dẫn bắt đầu từ các phòng thí nghiệm nghiên cứu máy tính đầu tiên đến các máy tính gia đình.",
                     CreatedOn = new DateTime(2023, 08, 21),
@@ -331,6 +348,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 3,
                     AvailableQuantity = 3,
                     TotalPages = 64,
+                    Price = 25000,
                     ImageUrl = "phap_luat.jpeg",
                     Description = "Luật An ninh mạng được Quốc hội thông qua ngày 12/6/2018. Luật gồm 7 Chương, 43 Điều.",
                     CreatedOn = new DateTime(2024, 01, 15),
@@ -347,6 +365,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 10,
                     AvailableQuantity = 9,
                     TotalPages = 100,
+                    Price = 40000,
                     ImageUrl = "ty_quay.jpeg",
                     Description = "“Tý quậy là một phần tuổi thơ tôi, của bạn bè tôi. Không có ý mong Tý trở thành nhân vật điển hình, tôi chỉ ước sao Tý quậy là một người bạn gần gũi, quen thuộc và sống đúng nghĩa tuổi thơ.Thật không khôn ngoan khi dạy trẻ phải suy nghĩ những gì, mà nên hướng cho tuổi thơ cách suy nghĩ. Một đứa trẻ không hoạt bát thì tuyệt đối sẽ không trở thành người thông minh.Có câu danh ngôn rằng: việc độc nhất vô nhị và không có gì thay thế, đó là hồi ức về tuổi thơ. Vậy khi làm sách Tý quậy, bên cạnh tình yêu thương trong tôi có cả sự trân trọng...” (Tác giả Đào Hải)",
                     CreatedOn = new DateTime(2024, 01, 15),
@@ -363,6 +382,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 6,
                     AvailableQuantity = 6,
                     TotalPages = 292,
+                    Price = 98000,
                     ImageUrl = "tieu_thuyet.jpeg",
                     Description = "Cuốn sách viết về những mâu thuẫn giữa họ Sầm và họ Hồ, con đường đưa Sầm Lay đến với cách mạng và quá trình Sầm Lay cùng bộ đội Cụ Hồ đưa ánh sáng cách mạng về giải phóng quê hương Suối Hoa của anh.",
                     CreatedOn = new DateTime(2024, 01, 15),
@@ -379,6 +399,7 @@ namespace LibraryManagerApp.Data.Data
                     Quantity = 2,
                     AvailableQuantity = 2,
                     TotalPages = 348,
+                    Price = 125000,
                     ImageUrl = "than_so_hoc.jpeg",
                     Description = "Thần số học bắt đầu phổ biến mạnh tại Việt Nam từ đầu năm 2020 trùng với thời điểm dịch Covid bắt đầu xâm nhập (chắc hẳn là có lý do của nó) và kéo dài cho đến ngày hôm nay. Quyển sách này dành cho tất cả những ai quan tâm và muốn nghiên cứu bài bản Thần số học nhằm mục đích ứng dụng hiệu quả.",
                     CreatedOn = new DateTime(2023, 05, 17),
@@ -499,6 +520,7 @@ namespace LibraryManagerApp.Data.Data
                     LibrarianId = librarians[0].Id,
                     DueDate = new DateTime(2024, 12, 20),
                     LoanCode = "ACBXY123",
+                    Deposit = 96000,
                     Status = Enum.StatusEnum.OnLoan,
                     LoanDate = new DateTime(2024, 12, 17),
                 },
@@ -509,6 +531,7 @@ namespace LibraryManagerApp.Data.Data
                     LibrarianId = librarians[0].Id,
                     DueDate = new DateTime(2024, 11, 15),
                     LoanCode = "HCGDT669",
+                    Deposit = 171000,
                     Status = Enum.StatusEnum.Returned,
                     ReturnedDate = new DateTime(2024, 11, 12),
                     LoanDate = new DateTime(2024, 11, 10),
@@ -520,6 +543,7 @@ namespace LibraryManagerApp.Data.Data
                     LibrarianId = librarians[0].Id,
                     DueDate = new DateTime(2024, 11, 20),
                     LoanCode = "HCGDT845",
+                    Deposit = 80000,
                     Status = Enum.StatusEnum.Returned,
                     ReturnedDate = new DateTime(2024, 11, 21),
                     LoanDate = new DateTime(2024, 11, 17),
@@ -531,6 +555,7 @@ namespace LibraryManagerApp.Data.Data
                     LibrarianId = admins[0].Id,
                     LoanDate = new DateTime(2024, 10, 10),
                     DueDate = new DateTime(2024, 10, 17),
+                    Deposit = 95000,
                     ReturnedDate = new DateTime(2024, 10, 15),
                     LoanCode = "JGIRU857",
                     Status = Enum.StatusEnum.Returned,
@@ -543,6 +568,7 @@ namespace LibraryManagerApp.Data.Data
                     LoanDate = new DateTime(2024, 09, 05),
                     DueDate = new DateTime(2024, 09, 12),
                     ReturnedDate = new DateTime(2024, 09, 13),
+                    Deposit = 25000,
                     LoanCode = "KFODY748",
                     Status = Enum.StatusEnum.Returned,
                 },
@@ -554,6 +580,7 @@ namespace LibraryManagerApp.Data.Data
                     LoanDate = new DateTime(2024, 09, 10),
                     DueDate = new DateTime(2024, 09, 18),
                     ReturnedDate = new DateTime(2024, 09, 15),
+                    Deposit = 85000,
                     LoanCode = "CNFJT094",
                     Status = Enum.StatusEnum.Returned,
                 }
@@ -612,6 +639,149 @@ namespace LibraryManagerApp.Data.Data
                 }
             };
             modelBuilder.Entity<LoanDetail>().HasData(loanDetails);
+
+            List<UserAction> userActions = new List<UserAction>() 
+            {
+                new UserAction()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = admins[0].Id,
+                    Timestamp = new DateTime(2024, 09, 15),
+                    ActionName = "đã xác nhận trả phiếu CNFJT094",
+                },
+                new UserAction()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 09, 13),
+                    ActionName = "đã xác nhận trả phiếu KFODY748",
+                },
+                new UserAction()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = admins[0].Id,
+                    Timestamp = new DateTime(2024, 10, 15),
+                    ActionName = "đã xác nhận trả phiếu JGIRU857",
+                },
+                new UserAction()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 11, 21),
+                    ActionName = "đã xác nhận trả phiếu HCGDT845",
+                },
+                new UserAction()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 11, 12),
+                    ActionName = "đã xác nhận trả phiếu HCGDT669",
+                },
+                new UserAction()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 12, 17),
+                    ActionName = "đã tạo phiếu mượn ACBXY123",
+                }
+            };
+            modelBuilder.Entity<UserAction>().HasData(userActions);
+
+            List<DepositTransaction> transactions = new List<DepositTransaction>()
+            {
+                new DepositTransaction() // 0
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositIn,
+                    Amount = 96000,
+                    Description = "đã cọc phiếu ACBXY123",
+                    UserId = members[0].Id,
+                    Timestamp = new DateTime(2024, 12, 17),
+                },
+                new DepositTransaction() // 1
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositIn,
+                    Amount = 171000,
+                    Description = "đã cọc phiếu HCGDT669",
+                    UserId = members[1].Id,
+                    Timestamp = new DateTime(2024, 11, 10),
+                },
+                new DepositTransaction() // 2
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositIn,
+                    Amount = 80000,
+                    Description = "đã cọc phiếu HCGDT845",
+                    UserId = members[2].Id,
+                    Timestamp = new DateTime(2024, 11, 10),
+                },
+                new DepositTransaction() // 3
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositIn,
+                    Amount = 95000,
+                    Description = "đã cọc phiếu JGIRU857",
+                    UserId = members[3].Id,
+                    Timestamp = new DateTime(2024, 11, 10),
+                },
+                new DepositTransaction() // 4
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositIn,
+                    Amount = 25000,
+                    Description = "đã cọc phiếu KFODY748",
+                    UserId = members[4].Id,
+                    Timestamp = new DateTime(2024, 11, 10),
+                },
+                new DepositTransaction() // 5
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositIn,
+                    Amount = 85000,
+                    Description = "đã cọc phiếu CNFJT094",
+                    UserId = members[3].Id,
+                    Timestamp = new DateTime(2024, 11, 10),
+                },
+
+                new DepositTransaction() // 6
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositOut,
+                    Amount = 80000,
+                    Description = "đã trả cọc phiếu HCGDT845",
+                    UserId = members[2].Id,
+                    Timestamp = new DateTime(2024, 11, 21),
+                },
+                new DepositTransaction() // 7
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositOut,
+                    Amount = 95000,
+                    Description = "đã trả cọc phiếu JGIRU857",
+                    UserId = members[3].Id,
+                    Timestamp = new DateTime(2024, 10, 15),
+                },
+                new DepositTransaction() // 8
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositOut,
+                    Amount = 25000,
+                    Description = "đã trả cọc phiếu KFODY748",
+                    UserId = members[4].Id,
+                    Timestamp = new DateTime(2024, 09, 13),
+                },
+                new DepositTransaction() // 9
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositOut,
+                    Amount = 85000,
+                    Description = "đã trả cọc phiếu CNFJT094",
+                    UserId = members[3].Id,
+                    Timestamp = new DateTime(2024, 09, 15),
+                },
+            };
+            modelBuilder.Entity<DepositTransaction>().HasData(transactions);
 
             base.OnModelCreating(modelBuilder);
         }

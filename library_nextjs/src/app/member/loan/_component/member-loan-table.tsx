@@ -29,12 +29,10 @@ import {
 import loanApiRequests from "@/apiRequests/loan";
 import LoanRowActions from "@/app/dashboard/loan/_component/loan-row-actions";
 import ReturnBookDialog from "@/app/dashboard/loan/_component/return-book-dialog";
-import ApproveLoanDialog from "@/app/dashboard/loan/_component/approve-loan-dialog";
-import OnLoanDialog from "@/app/dashboard/loan/_component/on-loan-dialog";
-import DeleteLoanDialog from "@/app/dashboard/loan/_component/delete-loan-dialog";
+import DeleteLoanButton from "@/app/member/loan/_component/delete-button";
 import LoanAlert from "@/app/dashboard/loan/_component/loan-alert";
 
-export function LoanTable() {
+export function MemberLoanTable() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [allChecked, setAllChecked] = useState<CheckedState>(false);
@@ -45,9 +43,6 @@ export function LoanTable() {
     LoanPaginatedResType | undefined
   >(undefined);
   const [openReturnDialog, setOpenReturnDialog] = useState(false);
-  const [openApproveDialog, setOpenApproveDialog] = useState(false);
-  const [openOnLoanDialog, setOpenOnLoanDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [actionId, setActionId] = useState<string>("");
 
   const fetchBooks = useCallback(
@@ -56,12 +51,12 @@ export function LoanTable() {
         setAllChecked(false);
         const params = new URLSearchParams(searchParams);
         if (triggerLoading) setLoading(true);
-        const { payload } = await loanApiRequests.getLoans(params.toString());
+        const { payload } = await loanApiRequests.memberGetLoans(
+          params.toString()
+        );
         if (payload?.items.length === 0) {
           toast.info("Không có dữ liệu để hiển thị!");
         }
-        console.log(payload);
-
         setLoanPaginated(payload);
       } catch (error) {
         handleApiError({
@@ -136,10 +131,10 @@ export function LoanTable() {
             callback={handleDeleteCallback}
           />
 
-          <Link href="/dashboard/loan/create">
+          <Link href="/member/loan/create">
             <Button variant="default" size="sm">
               <Plus />
-              Thêm phiếu mới
+              Yêu cầu phiếu mượn
             </Button>
           </Link>
         </div>
@@ -166,10 +161,6 @@ export function LoanTable() {
               <TableHead className="text-center border-y">#</TableHead>
               <TableHead className="text-center border">Mã phiếu</TableHead>
               <TableHead className="text-center border">Trạng thái</TableHead>
-              <TableHead className="text-center border">Người mượn</TableHead>
-              <TableHead className="text-center border">
-                Số điện thoại
-              </TableHead>
               <TableHead className="text-center border">Ngày mượn</TableHead>
               <TableHead className="text-center border">Ngày hạn</TableHead>
               <TableHead className="text-center border">Ngày trả</TableHead>
@@ -208,8 +199,6 @@ export function LoanTable() {
                     <span className="text-red-500">Quá hạn</span>
                   )}
                 </TableCell>
-                <TableCell>{loan.memberFullName}</TableCell>
-                <TableCell>{loan.memberPhone}</TableCell>
                 <TableCell>{formatDate(loan.loanDate)}</TableCell>
                 <TableCell>{formatDate(loan.dueDate)}</TableCell>
                 <TableCell>{formatDate(loan.returnedDate)}</TableCell>
@@ -217,15 +206,13 @@ export function LoanTable() {
                 <TableCell>{loan.librarianFullName}</TableCell>
                 <TableCell>
                   <div className="flex flex-row h-full justify-center">
-                    <LoanRowActions
-                      id={loan.id}
-                      status={loan.status}
-                      setActionId={setActionId}
-                      setOpenReturnDialog={setOpenReturnDialog}
-                      setOpenApproveDialog={setOpenApproveDialog}
-                      setOpenOnLoanDialog={setOpenOnLoanDialog}
-                      setOpenDeleteDialog={setOpenDeleteDialog}
-                    />
+                    {loan.status === "Pending" || loan.status === "Approved" ? (
+                      <DeleteLoanButton
+                        id={loan.id}
+                        loanCode={loan.loanCode}
+                        callback={handleDeleteCallback}
+                      />
+                    ) : null}
                   </div>
                 </TableCell>
               </TableRow>
@@ -243,39 +230,6 @@ export function LoanTable() {
         callback={handleDeleteCallback}
         open={openReturnDialog}
         setOpen={setOpenReturnDialog}
-      />
-
-      <ApproveLoanDialog
-        id={actionId}
-        loanCode={
-          loanPaginated?.items.find((item) => item.id === actionId)?.loanCode ??
-          ""
-        }
-        callback={handleDeleteCallback}
-        open={openApproveDialog}
-        setOpen={setOpenApproveDialog}
-      />
-
-      <OnLoanDialog
-        id={actionId}
-        loanCode={
-          loanPaginated?.items.find((item) => item.id === actionId)?.loanCode ??
-          ""
-        }
-        callback={handleDeleteCallback}
-        open={openOnLoanDialog}
-        setOpen={setOpenOnLoanDialog}
-      />
-
-      <DeleteLoanDialog
-        id={actionId}
-        loanCode={
-          loanPaginated?.items.find((item) => item.id === actionId)?.loanCode ??
-          ""
-        }
-        callback={handleDeleteCallback}
-        open={openDeleteDialog}
-        setOpen={setOpenDeleteDialog}
       />
 
       <div className="mt-5 flex w-full justify-center">

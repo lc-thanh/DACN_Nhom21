@@ -1,4 +1,5 @@
 import http from "@/lib/http";
+import { LoanPaginatedResType } from "@/schemaValidations/loan.schema";
 import {
   CreateMemberBodyType,
   MemberPaginatedResType,

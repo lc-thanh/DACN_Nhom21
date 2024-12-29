@@ -2,6 +2,7 @@ import { LoanAreaChart } from "@/app/dashboard/_component/loan-area-chart";
 import { LoanAnimatedNumberGrid } from "@/app/dashboard/_component/loan-number-grid";
 import { LoanPieChart } from "@/app/dashboard/_component/loan-pie-chart";
 import { AnimatedNumberSkeleton } from "@/app/dashboard/_component/skeleton-loan-number-card";
+import UserActionsCard from "@/app/dashboard/_component/user-actions-card";
 import UserActionsTable from "@/app/dashboard/_component/user-actions-table";
 import { Suspense } from "react";
 
@@ -34,7 +35,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <UserActionsTable />
+      <UserActionsCard />
     </div>
   );
 }

@@ -10,13 +10,15 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { decodeJWT } from "@/lib/utils";
 import {
   LayoutDashboard,
   Book,
   SquareLibrary,
   Tag,
-  Inbox,
   LayoutList,
+  BriefcaseBusiness,
+  Users,
 } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -53,22 +55,12 @@ const loanManagementItems = [
     icon: Tag,
   },
 ];
-const humanResourceItems = [
-  {
-    title: "Quản lý nhân sự ",
-    url: "/dashboard/staff",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Quản lý thành viên",
-    url: "/dashboard/member",
-    icon: Inbox,
-  },
-];
 
 export async function AppSidebar() {
-  // const cookieStore = await cookies();
-  // const accessToken = cookieStore.get("accessToken");
+  const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
+  const jwtPayload = accessToken ? decodeJWT(accessToken) : null;
+  const isAdmin = jwtPayload?.role === "Admin";
 
   return (
     <Sidebar variant="floating" collapsible="icon">
@@ -126,19 +118,27 @@ export async function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Nhân sự</SidebarGroupLabel>
+          <SidebarGroupLabel>Tài khoản</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {humanResourceItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {isAdmin && (
+                <SidebarMenuItem key="Quản lý nhân sự">
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
+                    <a href="/dashboard/staff">
+                      <BriefcaseBusiness />
+                      <span>Quản lý nhân sự</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-              ))}
+              )}
+              <SidebarMenuItem key="Quản lý thành viên">
+                <SidebarMenuButton asChild>
+                  <a href="/dashboard/member">
+                    <Users />
+                    <span>Quản lý thành viên</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

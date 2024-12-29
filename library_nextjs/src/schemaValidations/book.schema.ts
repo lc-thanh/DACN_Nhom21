@@ -17,6 +17,7 @@ export const Book = z
     quantity: z.number(),
     availableQuantity: z.number(),
     totalPages: z.number(),
+    price: z.number(),
     imageUrl: z.string(),
     description: z.string(),
     createdOn: z.string(),
@@ -66,6 +67,10 @@ export const CreateBookBody = z
       .number()
       .min(0, { message: "Số trang không hợp lệ!" })
       .max(9999, { message: "Số trang không hợp lệ!" }),
+    price: z.coerce
+      .number()
+      .min(0, { message: "Giá bìa không hợp lệ!" })
+      .max(99999999, { message: "Giá bìa không hợp lệ!" }),
     publisher: z.preprocess((value) => {
       if (value === "") return undefined;
       return value;

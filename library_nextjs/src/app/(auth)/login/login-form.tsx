@@ -47,6 +47,7 @@ export function LoginForm() {
       await authApiRequests.login(values);
       toast.success("Đăng nhập thành công!");
       router.push("/dashboard");
+      router.refresh();
     } catch (error: any) {
       handleApiError({
         error,

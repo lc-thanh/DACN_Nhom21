@@ -31,6 +31,10 @@ namespace LibraryManagerApp.Data.Models
         [MaxLength(2000)]
         public string? Description { get; set; }
 
+        [Required]
+        [Range(0, 99999999)]
+        public int Price { get; set; }
+
         public DateTime CreatedOn { get; set; } = DateTime.Now;
 
         public string? AuthorName { get; set; }

@@ -16,6 +16,7 @@ export const Loan = z
     loanDate: z.string(),
     dueDate: z.string(),
     returnedDate: z.string().optional(),
+    deposit: z.number(),
     status: LoanStatus,
     memberId: z.string().uuid(),
     memberPhone: z.string(),
@@ -64,3 +65,27 @@ export const CreateLoanBody = z
     }
   });
 export type CreateLoanBodyType = z.TypeOf<typeof CreateLoanBody>;
+
+export const MemberCreateLoanBody = z
+  .object({
+    bookIdAndQuantity: z
+      .array(z.string())
+      .min(1, { message: "Chọn ít nhất 1 cuốn sách!" }),
+    loanDate: z.date({
+      required_error: "Chọn ngày mượn sách!",
+    }),
+    dueDate: z.date({
+      required_error: "Chọn ngày trả sách!",
+    }),
+  })
+  .strict()
+  .superRefine(({ loanDate, dueDate }, ctx) => {
+    if (dueDate <= loanDate) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Ngày trả sách phải sau ngày mượn sách!",
+        path: ["dueDate"],
+      });
+    }
+  });
+export type MemberCreateLoanBodyType = z.TypeOf<typeof MemberCreateLoanBody>;
