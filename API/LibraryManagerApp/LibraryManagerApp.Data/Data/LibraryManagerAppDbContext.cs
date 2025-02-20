@@ -91,9 +91,15 @@ namespace LibraryManagerApp.Data.Data
                 .HasForeignKey(ua => ua.UserId);
 
             modelBuilder.Entity<DepositTransaction>()
-                .HasOne<User>(dt => dt.User)
-                .WithMany(u => u.DepositTransactions)
-                .HasForeignKey(dt => dt.UserId);
+                .HasOne<Librarian>(dt => dt.Librarian)
+                .WithMany(l => l.DepositTransactions)
+                .HasForeignKey(dt => dt.LibrarianId);
+
+            modelBuilder.Entity<DepositTransaction>()
+                .HasOne<Member>(dt => dt.Member)
+                .WithMany(m => m.DepositTransactions)
+                .HasForeignKey(dt => dt.MemberId)
+                .IsRequired(false);
 
             modelBuilder.Entity<UserToken>()
                 .HasOne<User>(ut => ut.User)
@@ -694,8 +700,9 @@ namespace LibraryManagerApp.Data.Data
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositIn,
                     Amount = 96000,
-                    Description = "đã cọc phiếu ACBXY123",
-                    UserId = members[0].Id,
+                    Description = "ACBXY123",
+                    MemberId = members[0].Id,
+                    LibrarianId = librarians[0].Id,
                     Timestamp = new DateTime(2024, 12, 17),
                 },
                 new DepositTransaction() // 1
@@ -703,8 +710,9 @@ namespace LibraryManagerApp.Data.Data
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositIn,
                     Amount = 171000,
-                    Description = "đã cọc phiếu HCGDT669",
-                    UserId = members[1].Id,
+                    Description = "HCGDT669",
+                    MemberId = members[1].Id,
+                    LibrarianId = librarians[0].Id,
                     Timestamp = new DateTime(2024, 11, 10),
                 },
                 new DepositTransaction() // 2
@@ -712,72 +720,90 @@ namespace LibraryManagerApp.Data.Data
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositIn,
                     Amount = 80000,
-                    Description = "đã cọc phiếu HCGDT845",
-                    UserId = members[2].Id,
-                    Timestamp = new DateTime(2024, 11, 10),
+                    Description = "HCGDT845",
+                    MemberId = members[2].Id,
+                    LibrarianId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 11, 17),
                 },
                 new DepositTransaction() // 3
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositIn,
                     Amount = 95000,
-                    Description = "đã cọc phiếu JGIRU857",
-                    UserId = members[3].Id,
-                    Timestamp = new DateTime(2024, 11, 10),
+                    Description = "JGIRU857",
+                    MemberId = members[3].Id,
+                    LibrarianId = admins[0].Id,
+                    Timestamp = new DateTime(2024, 10, 10),
                 },
                 new DepositTransaction() // 4
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositIn,
                     Amount = 25000,
-                    Description = "đã cọc phiếu KFODY748",
-                    UserId = members[4].Id,
-                    Timestamp = new DateTime(2024, 11, 10),
+                    Description = "KFODY748",
+                    MemberId = members[4].Id,
+                    LibrarianId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 09, 05),
                 },
                 new DepositTransaction() // 5
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositIn,
                     Amount = 85000,
-                    Description = "đã cọc phiếu CNFJT094",
-                    UserId = members[3].Id,
-                    Timestamp = new DateTime(2024, 11, 10),
+                    Description = "CNFJT094",
+                    MemberId = members[3].Id,
+                    LibrarianId = admins[0].Id,
+                    Timestamp = new DateTime(2024, 09, 10),
                 },
 
                 new DepositTransaction() // 6
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositOut,
-                    Amount = 80000,
-                    Description = "đã trả cọc phiếu HCGDT845",
-                    UserId = members[2].Id,
-                    Timestamp = new DateTime(2024, 11, 21),
+                    Amount = 171000,
+                    Description = "HCGDT669",
+                    MemberId = members[1].Id,
+                    LibrarianId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 11, 12),
                 },
                 new DepositTransaction() // 7
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositOut,
-                    Amount = 95000,
-                    Description = "đã trả cọc phiếu JGIRU857",
-                    UserId = members[3].Id,
-                    Timestamp = new DateTime(2024, 10, 15),
+                    Amount = 80000,
+                    Description = "HCGDT845",
+                    MemberId = members[2].Id,
+                    LibrarianId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 11, 21),
                 },
                 new DepositTransaction() // 8
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositOut,
-                    Amount = 25000,
-                    Description = "đã trả cọc phiếu KFODY748",
-                    UserId = members[4].Id,
-                    Timestamp = new DateTime(2024, 09, 13),
+                    Amount = 95000,
+                    Description = "JGIRU857",
+                    MemberId = members[3].Id,
+                    LibrarianId = admins[0].Id,
+                    Timestamp = new DateTime(2024, 10, 15),
                 },
                 new DepositTransaction() // 9
                 {
                     Id = Guid.NewGuid(),
                     TransactionType = Enum.TransactionType.DepositOut,
+                    Amount = 25000,
+                    Description = "KFODY748",
+                    MemberId = members[4].Id,
+                    LibrarianId = librarians[0].Id,
+                    Timestamp = new DateTime(2024, 09, 13),
+                },
+                new DepositTransaction() // 10
+                {
+                    Id = Guid.NewGuid(),
+                    TransactionType = Enum.TransactionType.DepositOut,
                     Amount = 85000,
-                    Description = "đã trả cọc phiếu CNFJT094",
-                    UserId = members[3].Id,
+                    Description = "CNFJT094",
+                    MemberId = members[3].Id,
+                    LibrarianId = admins[0].Id,
                     Timestamp = new DateTime(2024, 09, 15),
                 },
             };

@@ -23,7 +23,7 @@ export async function AppHeader() {
             Quản lý thư viện
           </span>
         </Link>
-        <nav className="sm:flex items-center ms-4 gap-6 text-sm hidden">
+        <nav className="sm:flex items-center gap-6 text-sm hidden">
           <Link
             href="https://www.haui.edu.vn/vn"
             target="_blank"

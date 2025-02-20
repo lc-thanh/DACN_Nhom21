@@ -7,6 +7,7 @@ export const LoanStatus = z.enum([
   "OnLoan",
   "Returned",
   "Overdue",
+  "Unreturned",
 ]);
 
 export const Loan = z

@@ -19,6 +19,7 @@ import {
   LayoutList,
   BriefcaseBusiness,
   Users,
+  Banknote,
 } from "lucide-react";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -53,6 +54,11 @@ const loanManagementItems = [
     title: "Quản lý phiếu mượn",
     url: "/dashboard/loan",
     icon: Tag,
+  },
+  {
+    title: "Quỹ cọc sách",
+    url: "/dashboard/deposit",
+    icon: Banknote,
   },
 ];
 

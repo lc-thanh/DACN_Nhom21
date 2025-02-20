@@ -58,6 +58,7 @@ namespace LibraryManagerApp.API.Controllers
                 Quantity = b.Quantity,
                 AvailableQuantity = b.AvailableQuantity,
                 TotalPages = b.TotalPages,
+                Price = b.Price,
                 ImageUrl = $"{baseUrl}/images/books/{b.ImageUrl}",
                 Description = b.Description,
                 AuthorName = b.AuthorName,
@@ -189,6 +190,7 @@ namespace LibraryManagerApp.API.Controllers
                 Quantity = b.Quantity,
                 AvailableQuantity = b.AvailableQuantity,
                 TotalPages = b.TotalPages,
+                Price = b.Price,
                 ImageUrl = $"{baseUrl}/images/books/{b.ImageUrl}",
                 Description = b.Description,
                 AuthorName = b.AuthorName,
@@ -243,6 +245,7 @@ namespace LibraryManagerApp.API.Controllers
                 Quantity = bookDto.Quantity,
                 AvailableQuantity = bookDto.Quantity,
                 TotalPages = bookDto.TotalPages,
+                Price = bookDto.Price,
                 ImageUrl = uniqueFileName,
                 Description = bookDto.Description,
                 AuthorName = bookDto.AuthorName,
@@ -265,10 +268,6 @@ namespace LibraryManagerApp.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBook(Guid id, [FromForm] BookCreateModel bookDto, [FromForm] IFormFile? image, [FromForm] bool isUpdateImage = false)
         {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
             var existingBook = await _unitOfWork.BookRepository.GetByIdAsync(id);
             if (existingBook == null)
             {
@@ -279,11 +278,24 @@ namespace LibraryManagerApp.API.Controllers
             existingBook.AuthorName = bookDto.AuthorName;
             existingBook.Publisher = bookDto.Publisher;
             existingBook.PublishedYear = bookDto.PublishedYear;
-            existingBook.Quantity = bookDto.Quantity;
             existingBook.TotalPages = bookDto.TotalPages;
+            existingBook.Price = bookDto.Price;
             existingBook.Description = bookDto.Description;
             existingBook.CategoryId = bookDto.CategoryId;
             existingBook.BookShelfId = bookDto.BookShelfId;
+
+            if (bookDto.Quantity != existingBook.Quantity)
+            {
+                int diff = bookDto.Quantity - existingBook.Quantity;
+
+                existingBook.Quantity += diff;
+                existingBook.AvailableQuantity += diff;
+
+                if (existingBook.AvailableQuantity < 0) 
+                {
+                    return BadRequest(new { message = "Số lượng sách không hợp lệ!" });
+                }
+            }
 
             if (isUpdateImage)
             {

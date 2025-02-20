@@ -42,6 +42,7 @@ export default function PickedBooksTable({
           <TableHead className="text-center border-y">#</TableHead>
           <TableHead className="text-center border">Tiêu đề</TableHead>
           <TableHead className="text-center border">Ảnh</TableHead>
+          <TableHead className="text-center border">Giá bìa</TableHead>
           <TableHead className="text-center border">Hiện có</TableHead>
           <TableHead className="text-center border">Số trang</TableHead>
           <TableHead className="text-center border">Tác giả</TableHead>
@@ -50,6 +51,7 @@ export default function PickedBooksTable({
           <TableHead className="text-center border">Nhà xuất bản</TableHead>
           <TableHead className="text-center border">Năm XB</TableHead>
           <TableHead className="text-center border">Số lượng</TableHead>
+          <TableHead className="text-center border">Thành tiền</TableHead>
           <TableHead className="text-center border">Bỏ chọn</TableHead>
         </TableRow>
       </TableHeader>
@@ -67,6 +69,9 @@ export default function PickedBooksTable({
                 height={0}
                 alt="Book cover image"
               />
+            </TableCell>
+            <TableCell className="text-nowrap">
+              {loanBook.book.price.toLocaleString("de-DE") + " đ"}
             </TableCell>
             <TableCell>{loanBook.book.availableQuantity}</TableCell>
             <TableCell>{loanBook.book.totalPages}</TableCell>
@@ -88,6 +93,11 @@ export default function PickedBooksTable({
                 />
               </div>
             </TableCell>
+            <TableCell className="text-nowrap">
+              {(loanBook.book.price * loanBook.quantity).toLocaleString(
+                "de-DE"
+              ) + " đ"}
+            </TableCell>
             <TableCell>
               <div className="flex flex-row h-full justify-center">
                 <Button
@@ -107,7 +117,7 @@ export default function PickedBooksTable({
       </TableBody>
       <TableFooter>
         <TableRow>
-          <TableCell colSpan={10} className="text-right pe-20">
+          <TableCell colSpan={11} className="text-right pe-20">
             Tổng
           </TableCell>
           <TableCell colSpan={1} className="text-center pe-2">
@@ -116,7 +126,15 @@ export default function PickedBooksTable({
               0
             )}
           </TableCell>
-          <TableCell></TableCell>
+          <TableCell colSpan={2} className="text-left text-nowrap">
+            {pickedBooks
+              .reduce(
+                (totalDeposit, loanBook) =>
+                  totalDeposit + loanBook.quantity * loanBook.book.price,
+                0
+              )
+              .toLocaleString("de-DE") + " đ"}
+          </TableCell>
         </TableRow>
       </TableFooter>
     </Table>

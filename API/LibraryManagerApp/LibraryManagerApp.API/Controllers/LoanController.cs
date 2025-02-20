@@ -60,6 +60,7 @@ namespace LibraryManagerApp.API.Controllers
                 DueDate = l.DueDate,
                 ReturnedDate = l.ReturnedDate,
                 Status = l.Status,
+                Deposit = l.Deposit,
                 MemberId = l.MemberId,
                 MemberPhone = l.Member.Phone,
                 MemberFullName = l.Member.FullName,
@@ -183,8 +184,9 @@ namespace LibraryManagerApp.API.Controllers
             {
                 Amount = deposit,
                 TransactionType = TransactionType.DepositIn,
-                UserId = member.Id,
-                Description = "đã cọc phiếu " + loanCode,
+                MemberId = member.Id,
+                LibrarianId = librarian.Id,
+                Description = loanCode,
                 Timestamp = loan.LoanDate,
             });
 
@@ -248,8 +250,9 @@ namespace LibraryManagerApp.API.Controllers
             {
                 Amount = loan.Deposit,
                 TransactionType = TransactionType.DepositOut,
-                UserId = loan.MemberId,
-                Description = "đã trả cọc phiếu " + loan.LoanCode,
+                MemberId = loan.MemberId,
+                LibrarianId = librarian.Id,
+                Description = loan.LoanCode,
                 Timestamp = DateTime.Now,
             });
 
@@ -355,8 +358,9 @@ namespace LibraryManagerApp.API.Controllers
             {
                 Amount = loan.Deposit,
                 TransactionType = TransactionType.DepositIn,
-                UserId = loan.MemberId,
-                Description = "đã cọc phiếu " + loan.LoanCode,
+                MemberId = loan.MemberId,
+                LibrarianId = librarian.Id,
+                Description = loan.LoanCode,
                 Timestamp = loan.LoanDate,
             });
 
@@ -370,6 +374,48 @@ namespace LibraryManagerApp.API.Controllers
             var saved = await _unitOfWork.SaveChangesAsync();
             if (saved > 0)
                 return Ok(new { message = "Đã tạo phiếu mượn!" });
+
+            return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
+        }
+
+        [Authorize(Roles = "Admin,Librarian")]
+        [HttpPost("{loanId}/unreturned")]
+        public async Task<IActionResult> ToUnreturned(Guid loanId)
+        {
+            string librarianPhone = User.FindFirst(ClaimTypes.Name)?.Value;
+            var librarian = await _unitOfWork.UserRepository.GetByPhoneAsync(librarianPhone);
+
+            var loan = await _unitOfWork.LoanRepository.GetAllInforsQuery().FirstOrDefaultAsync(l => l.Id == loanId);
+            if (loan == null)
+                return BadRequest(new { message = "Không tìm thấy phiếu!" });
+
+            if (loan.Status != StatusEnum.OnLoan && loan.Status != StatusEnum.Overdue)
+                return BadRequest(new { message = "Trạng thái phiếu không hợp lệ!" });
+
+            foreach (var detail in loan.LoanDetails)
+            {
+                var book = await _unitOfWork.BookRepository.GetByIdAsync(detail.BookId);
+                if (book != null)
+                {
+                    book.Quantity -= detail.Quantity;
+                    _unitOfWork.BookRepository.Update(book);
+                }
+            }
+
+            loan.Status = StatusEnum.Unreturned;
+            loan.LibrarianId = librarian.Id;
+            _unitOfWork.LoanRepository.Update(loan);
+
+            _unitOfWork.Context.UserActions.Add(new UserAction()
+            {
+                UserId = librarian.Id,
+                ActionName = "đã vô hiệu phiếu " + loan.LoanCode,
+                Timestamp = DateTime.Now,
+            });
+
+            var saved = await _unitOfWork.SaveChangesAsync();
+            if (saved > 0)
+                return Ok(new { message = "Đã vô hiệu phiếu!" });
 
             return StatusCode(500, new { message = "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
         }
@@ -396,6 +442,7 @@ namespace LibraryManagerApp.API.Controllers
                 DueDate = l.DueDate,    
                 ReturnedDate = l.ReturnedDate,
                 Status = l.Status,
+                Deposit = l.Deposit,
                 MemberId = l.MemberId,
                 MemberPhone = l.Member.Phone,
                 MemberFullName = l.Member.FullName,

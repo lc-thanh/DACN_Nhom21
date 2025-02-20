@@ -57,6 +57,15 @@ export function MemberLoanTable() {
         if (payload?.items.length === 0) {
           toast.info("Không có dữ liệu để hiển thị!");
         }
+        if (payload?.items.some((item) => item.status === "Overdue")) {
+          toast.warning(
+            "Bạn có phiếu mượn quá hạn, hãy đến thư viện để trả trong thời gian sớm nhất!",
+            {
+              description:
+                "Nếu bạn đã làm mất sách, hãy liên hệ thư viện - sđt: 0123456789",
+            }
+          );
+        }
         setLoanPaginated(payload);
       } catch (error) {
         handleApiError({
@@ -162,9 +171,10 @@ export function MemberLoanTable() {
               <TableHead className="text-center border">Mã phiếu</TableHead>
               <TableHead className="text-center border">Trạng thái</TableHead>
               <TableHead className="text-center border">Ngày mượn</TableHead>
-              <TableHead className="text-center border">Ngày hạn</TableHead>
+              <TableHead className="text-center border">Hạn trả</TableHead>
               <TableHead className="text-center border">Ngày trả</TableHead>
               <TableHead className="text-center border">Sách</TableHead>
+              <TableHead className="text-center border">Tiền cọc</TableHead>
               <TableHead className="text-center border">Nhân viên</TableHead>
               <TableHead className="text-center border">Tùy chọn</TableHead>
             </TableRow>
@@ -195,14 +205,19 @@ export function MemberLoanTable() {
                     <span className="text-blue-500">Đang mượn</span>
                   ) : loan.status === "Returned" ? (
                     <span>Đã trả</span>
-                  ) : (
+                  ) : loan.status === "Overdue" ? (
                     <span className="text-red-500">Quá hạn</span>
-                  )}
+                  ) : loan.status === "Unreturned" ? (
+                    <span>Đã vô hiệu</span>
+                  ) : null}
                 </TableCell>
                 <TableCell>{formatDate(loan.loanDate)}</TableCell>
                 <TableCell>{formatDate(loan.dueDate)}</TableCell>
                 <TableCell>{formatDate(loan.returnedDate)}</TableCell>
                 <TableCell>{loan.bookNames.join(", ")}</TableCell>
+                <TableCell className="text-nowrap">
+                  {loan.deposit.toLocaleString("de-DE") + " đ"}
+                </TableCell>
                 <TableCell>{loan.librarianFullName}</TableCell>
                 <TableCell>
                   <div className="flex flex-row h-full justify-center">

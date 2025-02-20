@@ -172,6 +172,7 @@ export function BookTable() {
                 Tiêu đề
               </SortableTableHead>
               <TableHead className="text-center border">Ảnh</TableHead>
+              <TableHead className="text-center border">Giá bìa</TableHead>
               <SortableTableHead
                 orderName="Quantity"
                 className="text-center border"
@@ -230,6 +231,9 @@ export function BookTable() {
                     height={0}
                     alt="Book cover image"
                   />
+                </TableCell>
+                <TableCell className="text-nowrap">
+                  {book.price.toLocaleString("de-DE") + " đ"}
                 </TableCell>
                 <TableCell>{book.quantity}</TableCell>
                 <TableCell>{book.availableQuantity}</TableCell>

@@ -6,6 +6,7 @@
         Approved,
         OnLoan,
         Returned,
-        Overdue
+        Overdue,
+        Unreturned,
     }
 }

@@ -10,7 +10,7 @@ namespace LibraryManagerApp.Data.Enum
     {
         DepositIn,
         DepositOut,
-        AddIn,
-        TakeOut
+        WithdrawIn,
+        WithdrawOut
     }
 }

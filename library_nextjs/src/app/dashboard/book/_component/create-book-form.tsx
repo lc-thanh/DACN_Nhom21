@@ -33,6 +33,7 @@ import bookApiRequests from "@/apiRequests/book";
 import { handleApiError } from "@/lib/utils";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import CurrencyInput from "@/components/money-input";
 
 export default function CreateBookForm() {
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,7 @@ export default function CreateBookForm() {
       publisher: "",
       description: "",
       authorName: "",
+      price: 0,
       quantity: 0,
       totalPages: 0,
     },
@@ -69,9 +71,11 @@ export default function CreateBookForm() {
   async function onSubmit(values: CreateBookBodyType) {
     try {
       setLoading(true);
-      await bookApiRequests.create(values);
-      toast.success("Tạo sách mới thành công!");
-      router.push("/dashboard/book");
+      console.log(values);
+
+      // await bookApiRequests.create(values);
+      // toast.success("Tạo sách mới thành công!");
+      // router.push("/dashboard/book");
     } catch (error) {
       handleApiError({ error, toastMessage: "Tạo sách thất bại!" });
     } finally {
@@ -158,6 +162,30 @@ export default function CreateBookForm() {
                 </FormLabel>
                 <FormControl>
                   <Input placeholder="Nhập tiêu đề sách" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field: { value, onChange, ...fieldProps } }) => (
+              <FormItem>
+                <FormLabel>
+                  Giá bìa <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <div>
+                    <Input
+                      className="hidden"
+                      placeholder="Nhập giá bìa"
+                      type="number"
+                      {...fieldProps}
+                    />
+                    <CurrencyInput onChange={(number) => onChange(number)} />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>

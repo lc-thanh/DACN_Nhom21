@@ -72,6 +72,7 @@ export default function EditBookForm({ bookId }: { bookId: string }) {
       publisher: "",
       description: "",
       authorName: "",
+      price: 0,
       quantity: 0,
       totalPages: 0,
     },
@@ -85,6 +86,7 @@ export default function EditBookForm({ bookId }: { bookId: string }) {
       if (book.authorName) form.setValue("authorName", book.authorName);
       if (book.quantity) form.setValue("quantity", book.quantity);
       if (book.totalPages) form.setValue("totalPages", book.totalPages);
+      if (book.price) form.setValue("price", book.price);
       if (book.publishedYear)
         form.setValue("publishedYear", book.publishedYear);
       if (book.categoryId) form.setValue("categoryId", book.categoryId);
@@ -197,6 +199,26 @@ export default function EditBookForm({ bookId }: { bookId: string }) {
                 </FormLabel>
                 <FormControl>
                   <Input placeholder="Nhập tiêu đề sách" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>
+                  Giá bìa <span className="text-destructive">*</span>
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Nhập giá bìa sách"
+                    type="number"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

@@ -57,6 +57,12 @@ const loanApiRequests = {
     await delay(1000);
     return http.post(`/Loans/${id}/onloan`, null);
   },
+  toUnreturned: async (id: string) => {
+    const delay = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+    await delay(1000);
+    return http.post(`/Loans/${id}/unreturned`, null);
+  },
   delete: async (id: string) => {
     const delay = (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));

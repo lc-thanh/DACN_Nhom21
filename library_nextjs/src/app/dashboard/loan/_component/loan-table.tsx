@@ -33,6 +33,7 @@ import ApproveLoanDialog from "@/app/dashboard/loan/_component/approve-loan-dial
 import OnLoanDialog from "@/app/dashboard/loan/_component/on-loan-dialog";
 import DeleteLoanDialog from "@/app/dashboard/loan/_component/delete-loan-dialog";
 import LoanAlert from "@/app/dashboard/loan/_component/loan-alert";
+import UnreturnedLoanDialog from "@/app/dashboard/loan/_component/unreturned-loan-dialog";
 
 export function LoanTable() {
   const searchParams = useSearchParams();
@@ -48,6 +49,7 @@ export function LoanTable() {
   const [openApproveDialog, setOpenApproveDialog] = useState(false);
   const [openOnLoanDialog, setOpenOnLoanDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openUnreturnedDialog, setOpenUnreturnedDialog] = useState(false);
   const [actionId, setActionId] = useState<string>("");
 
   const fetchBooks = useCallback(
@@ -126,6 +128,7 @@ export function LoanTable() {
               { label: "Đang mượn", value: "OnLoan", color: "blue" },
               { label: "Đã trả", value: "Returned" },
               { label: "Quá hạn", value: "Overdue", color: "red" },
+              { label: "Đã vô hiệu", value: "Unreturned" },
             ]}
           />
         </div>
@@ -171,9 +174,10 @@ export function LoanTable() {
                 Số điện thoại
               </TableHead>
               <TableHead className="text-center border">Ngày mượn</TableHead>
-              <TableHead className="text-center border">Ngày hạn</TableHead>
+              <TableHead className="text-center border">Hạn trả</TableHead>
               <TableHead className="text-center border">Ngày trả</TableHead>
               <TableHead className="text-center border">Sách</TableHead>
+              <TableHead className="text-center border">Tiền cọc</TableHead>
               <TableHead className="text-center border">Nhân viên</TableHead>
               <TableHead className="text-center border">Tùy chọn</TableHead>
             </TableRow>
@@ -204,9 +208,11 @@ export function LoanTable() {
                     <span className="text-blue-500">Đang mượn</span>
                   ) : loan.status === "Returned" ? (
                     <span>Đã trả</span>
-                  ) : (
+                  ) : loan.status === "Overdue" ? (
                     <span className="text-red-500">Quá hạn</span>
-                  )}
+                  ) : loan.status === "Unreturned" ? (
+                    <span>Đã vô hiệu</span>
+                  ) : null}
                 </TableCell>
                 <TableCell>{loan.memberFullName}</TableCell>
                 <TableCell>{loan.memberPhone}</TableCell>
@@ -214,6 +220,9 @@ export function LoanTable() {
                 <TableCell>{formatDate(loan.dueDate)}</TableCell>
                 <TableCell>{formatDate(loan.returnedDate)}</TableCell>
                 <TableCell>{loan.bookNames.join(", ")}</TableCell>
+                <TableCell className="text-nowrap">
+                  {loan.deposit.toLocaleString("de-DE") + " đ"}
+                </TableCell>
                 <TableCell>{loan.librarianFullName}</TableCell>
                 <TableCell>
                   <div className="flex flex-row h-full justify-center">
@@ -225,6 +234,7 @@ export function LoanTable() {
                       setOpenApproveDialog={setOpenApproveDialog}
                       setOpenOnLoanDialog={setOpenOnLoanDialog}
                       setOpenDeleteDialog={setOpenDeleteDialog}
+                      setOpenUnreturnedDialog={setOpenUnreturnedDialog}
                     />
                   </div>
                 </TableCell>
@@ -276,6 +286,17 @@ export function LoanTable() {
         callback={handleDeleteCallback}
         open={openDeleteDialog}
         setOpen={setOpenDeleteDialog}
+      />
+
+      <UnreturnedLoanDialog
+        id={actionId}
+        loanCode={
+          loanPaginated?.items.find((item) => item.id === actionId)?.loanCode ??
+          ""
+        }
+        callback={handleDeleteCallback}
+        open={openUnreturnedDialog}
+        setOpen={setOpenUnreturnedDialog}
       />
 
       <div className="mt-5 flex w-full justify-center">

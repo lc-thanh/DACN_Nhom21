@@ -28,6 +28,7 @@ const bookApiRequests = {
     formData.append("title", data.title);
     formData.append("quantity", data.quantity.toString());
     formData.append("totalPages", data.totalPages.toString());
+    formData.append("price", data.price.toString());
     if (data.publisher) formData.append("publisher", data.publisher);
     if (data.publishedYear)
       formData.append("publishedYear", data.publishedYear.toString());
@@ -54,6 +55,7 @@ const bookApiRequests = {
     formData.append("title", data.title);
     formData.append("quantity", data.quantity.toString());
     formData.append("totalPages", data.totalPages.toString());
+    formData.append("price", data.price.toString());
     if (data.publisher) formData.append("publisher", data.publisher);
     if (data.publishedYear)
       formData.append("publishedYear", data.publishedYear.toString());

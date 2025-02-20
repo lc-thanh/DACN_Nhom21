@@ -25,6 +25,7 @@ import categoryApiRequests from "@/apiRequests/category";
 import { CategoryType } from "@/schemaValidations/category.schema";
 import TableSearch from "@/components/data-table/table-search";
 import SortableTableHead from "@/components/data-table/sortable-table-head";
+import { BookDetailDialog } from "@/components/book-detail-dialog";
 
 export function MemberBookTable() {
   const searchParams = useSearchParams();
@@ -140,9 +141,7 @@ export function MemberBookTable() {
             {bookPaginated?.items.map((book: BookType, index) => (
               <TableRow key={book.id}>
                 <TableCell>{`${index + 1}.`}</TableCell>
-                <TableCell className="min-w-[150px] font-medium">
-                  {book.title}
-                </TableCell>
+                <BookDetailDialog book={book} />
                 <TableCell className="w-[150px] min-w-[100px]">
                   <Image
                     src={book.imageUrl}

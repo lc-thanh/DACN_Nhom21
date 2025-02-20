@@ -12,6 +12,7 @@ import {
   BookCopy,
   BookmarkCheck,
   Ellipsis,
+  TicketX,
   Trash2,
   UndoDot,
 } from "lucide-react";
@@ -24,6 +25,7 @@ export default function LoanRowActions({
   setOpenOnLoanDialog,
   setOpenDeleteDialog,
   setOpenReturnDialog,
+  setOpenUnreturnedDialog,
 }: {
   id: string;
   status: string;
@@ -32,6 +34,7 @@ export default function LoanRowActions({
   setOpenOnLoanDialog: (open: boolean) => void;
   setOpenDeleteDialog: (open: boolean) => void;
   setOpenReturnDialog: (open: boolean) => void;
+  setOpenUnreturnedDialog: (open: boolean) => void;
 }) {
   return (
     <DropdownMenu>
@@ -82,6 +85,16 @@ export default function LoanRowActions({
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuItem
+            onClick={() => {
+              setActionId(id);
+              setOpenUnreturnedDialog(true);
+            }}
+            disabled={status !== "OnLoan" && status !== "Overdue"}
+          >
+            <TicketX />
+            Vô hiệu phiếu
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
               setActionId(id);

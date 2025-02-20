@@ -21,10 +21,14 @@ namespace LibraryManagerApp.Data.Models
         [Required]
         public string Description { get; set; }
 
-        [Required]
-        public Guid UserId { get; set; }
+        public Guid? MemberId { get; set; }
 
-        public User User { get; set; }
+        public Member? Member { get; set; }
+
+        [Required]
+        public Guid LibrarianId { get; set; }
+
+        public Librarian Librarian { get; set; }
 
         public DateTime Timestamp { get; set; }
     }

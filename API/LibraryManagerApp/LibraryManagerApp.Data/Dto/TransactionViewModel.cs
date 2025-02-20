@@ -19,9 +19,13 @@ namespace LibraryManagerApp.Data.Dto
 
         public string Description { get; set; }
 
-        public Guid UserId { get; set; }
+        public Guid? MemberId { get; set; }
 
-        public string FullName { get; set; }
+        public string? MemberFullName { get; set; }
+
+        public Guid LibrarianId { get; set; }
+
+        public string LibrarianFullName { get; set; }
 
         public DateTime Timestamp { get; set; }
     }
